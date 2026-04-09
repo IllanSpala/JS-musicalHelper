@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POLY METRONOME</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/metronome.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/metronome.js" defer></script>
+</head>
+<body>
+
+    <header class="glass-header">
+        <a href="../index.html" class="logo" style="text-decoration:none; color:inherit;">jojoTools</a>
+        <nav class="center-links">
+            <a href="PolyMetro.html">Metrônomo</a>
+            <a href="ScaleMachine.html">Escalas</a>
+            <a href="TabPlayer.html">Tablatura</a>
+            <a href="HarmonicMap.html">Gravidade</a>
+        </nav>
+        <nav style="display:flex; align-items:center; gap:14px;">
+            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" style="color: white; text-decoration: none; font-size: 1.2rem;">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:0.8rem; padding:7px 16px;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+                <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
+                <span id="auth-username" class="chip-name"></span>
+            </div>
+        </nav>
+    </header>
+
+    <main style="display:flex; justify-content:center; align-items:center; min-height:85vh; padding:20px; width:100%; box-sizing:border-box;">
+        
+        <div class="container metronome-card" style="background:rgba(0,0,0,0.4); border-radius:15px; border:1px solid rgba(255,255,255,0.05); box-shadow:0 8px 30px rgba(0,0,0,0.5); padding:40px; max-width:600px; height:auto; width:100%;">
+            
+            <h1 class="glow-text" data-i18n="poly_title">Metrônomo Polirrítmico</h1>
+            <div class="visual-container"><svg id="poly-svg" width="280" height="280" viewBox="0 0 400 400"></svg></div>
+            <div class="controls-grid">
+                <div class="input-group">
+                    <input type="number" id="beat-a" value="3" min="1" max="20" required placeholder=" ">
+                    <label for="beat-a" data-i18n="main_beat">Batida Princ.</label>
+                    <div class="bar"></div>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="beat-b" value="4" min="1" max="20" required placeholder=" ">
+                    <label for="beat-b" data-i18n="sub_beat">Sub Batida</label>
+                    <div class="bar"></div>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="bpm" value="120" min="20" max="300" required placeholder=" ">
+                    <label for="bpm">BPM</label>
+                    <div class="bar"></div>
+                </div>
+            </div>
+            <button id="play-btn" class="glass-btn" data-i18n="btn_start">INICIAR</button>
+            
+        </div>
+    </main>
+
+</body>
+</html>

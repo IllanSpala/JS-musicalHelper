@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="prof_title">Perfil — jojozelan Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/profile.css">
+
+    <!-- Firebase Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/profile.js" defer></script>
+</head>
+<body class="profile-page">
+
+    <!-- Theme Sidebar (same pattern as ScaleMachine / PolyMetro) -->
+
+
+    <!-- ══════════════════════ HEADER ══════════════════════ -->
+    <header class="glass-header" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 24px; margin: 24px auto; width: 90%; max-width: 1152px; border-radius: 9999px; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); z-index: 100;">
+        
+        <div style="display: flex; align-items: center; justify-content: flex-start; min-width: 0; gap: 15px;">
+            <button onclick="window.history.back()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'" title="Voltar">
+                <i class="fas fa-chevron-left" style="font-size: 0.9rem; margin-right: 2px;"></i>
+            </button>
+
+            <a href="../index.html" class="logo">jojoTools</a>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; padding: 0 10px;">
+            <span style="font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">
+                — MEU PERFIL —
+            </span>
+        </div>
+
+        <nav style="display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
+            <a href="https://github.com/IllanSpala" target="_blank" style="color: white; text-decoration: none; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fab fa-github"></i>
+            </a>
+
+            <div id="auth-user-chip" class="auth-chip" style="cursor: default;">
+                <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
+            </div>
+        </nav>
+    </header>
+
+    <!-- ══════════════════════ MAIN ══════════════════════ -->
+    <main class="profile-main" id="profile-main">
+
+        <!-- Loading state -->
+        <div id="profile-loading" style="text-align:center; padding:80px 0; color:rgba(255,255,255,0.35); font-size:0.9rem;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:2rem; margin-bottom:16px; display:block;"></i>
+            <span data-i18n="prof_loading">Carregando perfil…</span>
+        </div>
+
+        <!-- Content (hidden until auth resolves) -->
+        <div id="profile-content" class="tp-hidden profile-content-grid">
+
+            <!-- ═══ LEFT COLUMN ═══ -->
+            <div class="profile-left-col">
+                <p class="profile-section-title" data-i18n="prof_title">Perfil</p>
+
+                <div class="avatar-area">
+                    <div class="avatar-wrapper" onclick="document.getElementById('avatar-file-input').click()">
+                        <img id="profile-avatar-img" src="" alt="Avatar">
+                        <div class="avatar-overlay">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <input type="file" id="avatar-file-input" accept="image/*" hidden>
+                    </div>
+                    <div class="avatar-info">
+                        <h2 id="display-username">—</h2>
+                        <p class="user-email" id="display-email"></p>
+                        <p class="avatar-upload-hint" data-i18n="prof_avatar_hint">Clique na foto para alterar</p>
+                        <div class="upload-progress" id="upload-progress">
+                            <div class="upload-progress-bar" id="upload-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-divider"></div>
+
+                <p class="profile-section-title" data-i18n="prof_edit_title">Editar Informações</p>
+
+                <div class="profile-field">
+                    <label for="inp-username"><i class="fas fa-user"></i> <span data-i18n="prof_username">Nome de usuário</span></label>
+                    <input type="text" id="inp-username" data-i18n-placeholder="prof_username_ph" placeholder="seu_nome_aqui" maxlength="32">
+                </div>
+
+                <div class="profile-field">
+                    <label for="inp-bio"><i class="fas fa-align-left"></i> <span data-i18n="prof_bio">Bio</span></label>
+                    <textarea id="inp-bio" data-i18n-placeholder="prof_bio_ph" placeholder="Fale um pouco sobre você…" rows="3" maxlength="200"></textarea>
+                </div>
+
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:16px;">
+                    <button id="btn-save-profile" class="btn-save">
+                        <i class="fas fa-save"></i><span data-i18n="prof_btn_save"> Salvar</span>
+                    </button>
+                    <span id="save-status" class="save-status"></span>
+                </div>
+
+                <div class="profile-divider"></div>
+
+                <button id="btn-logout" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i><span data-i18n="prof_btn_logout"> Sair da conta</span>
+                </button>
+            </div>
+
+            <!-- ═══ RIGHT COLUMN ═══ -->
+            <div class="profile-right-col">
+                <p class="profile-section-title" data-i18n="prof_panel_title">Painel de Aprendizado</p>
+                <div id="tabs-list" class="tabs-list">
+                    <p class="tabs-empty"><i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="prof_loading_tabs">Carregando…</span></p>
+                </div>
+            </div>
+
+        </div><!-- /profile-content -->
+    </main>
+
+
+
+</body>
+</html>

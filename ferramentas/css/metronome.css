@@ -1,0 +1,178 @@
+.container{
+    width: 100%;
+    max-width: none;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    gap: 25px; /* Cleanly stacks the grid instead of relying on margins */
+}
+
+h1.glow-text {
+    margin: 0;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+/* 2. VISUALIZER (The Shapes) - allow shrinking! */
+.visual-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    
+    /* This allows the circle to shrink if the screen is small */
+    flex-shrink: 1; 
+    min-height: 0;  
+    width: 100%;
+}
+
+#poly-svg {
+    width: auto;
+    height: 35vh; /* Concrete calculation */
+    max-height: 280px; 
+    max-width: 100%;
+}
+
+/* SHAPE COLORS */
+.poly-shape { fill: none; stroke-width: 2; transition: all 0.5s ease; }
+.shape-a-line { stroke: var(--accent-a); }
+.shape-a-dot { fill: var(--accent-a); }
+.shape-b-line { stroke: var(--accent-b); }
+.shape-b-dot { fill: var(--accent-b); }
+.poly-dot { transition: fill 0.1s, r 0.1s; }
+/* When MainBeat (A) is active, glow with Accent A color */
+.shape-a-dot.active {
+    fill: var(--accent-a) !important;
+    filter: drop-shadow(0 0 25px var(--accent-a));
+    r: 10; 
+}
+
+/* When SubBeat (B) is active, glow with Accent B color */
+.shape-b-dot.active {
+    fill: var(--accent-b) !important;
+    filter: drop-shadow(0 0 25px var(--accent-b));
+    r: 10; 
+}
+
+/* 3. CONTROLS CONTAINER */
+.controls-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* 4. NEW INPUT STYLING */
+.input-group {
+    position: relative;
+    width: 55%; /* Smaller width for the bar look */
+    margin-bottom: 5px;
+}
+
+/* Remove Arrows */
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+/* The Number Input */
+input {
+    font-size: 1.4rem;
+    padding: 5px 0;    /* Less padding */
+    display: block;
+    width: 100%;
+    border: none;      /* No default border */
+    background: transparent;
+    color: white;
+    text-align: center;
+    transition: 0.2s;
+    text-shadow: 0 0 8px rgba(255,255,255,0.3); 
+    
+    /* Pull content closer to the bar */
+    margin-bottom: 2px;
+}
+
+input:focus { outline: none; }
+
+/* THE CUSTOM BAR (Small & Centered) */
+.bar {
+    display: block;
+    height: 2px;
+    width: 28%;        /* Start small */
+    background: rgba(255,255,255,0.4);
+    margin: 0 auto;    /* Center it */
+    transition: all 0.2s ease;
+    transform: translate(0px, -5px);
+    border-radius: 2px;
+}
+
+/* On Focus: Expand the bar and make it bright */
+input:focus ~ .bar {
+    width: 100%;
+    background: var(--input-underline);
+    box-shadow: 0 0 8px var(--input-underline);
+}
+
+/* 5. FLOATING LABELS ("H1") - Adjusted Positions */
+label {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.9rem;
+    font-weight: normal;
+    position: absolute;
+    pointer-events: none;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    
+    /* CENTERED STARTING POSITION */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: 0.2s ease all;
+}
+
+/* Floating State: Closer to the number ("Lower") */
+input:focus ~ label, input:not(:placeholder-shown) ~ label {
+    top: -12px;  /* Closer to the input (was -20px) */
+    transform: none;
+    font-size: 0.75rem;
+    color: var(--input-underline);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* 6. BUTTON */
+button#play-btn {
+    transform: none;
+    margin: 0;
+    padding: 12px 36px;
+    width: auto;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    flex-shrink: 0;
+}
+
+/* 7. BACK ARROW */
+.back-btn {
+    width: 25px;
+    height: 25px;
+    border: none;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    transform:translate(1px, 8px);
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7); 
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.back-btn:hover { color: #ffffff; }
+
+.sidebar-divider {
+    width: 30px;
+    height: 2px;
+    background: rgba(255,255,255,0.2);
+    margin: 5px 0;
+    border-radius: 2px;
+}

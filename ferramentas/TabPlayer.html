@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Player — jojozelan Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/tab-player.css">
+    <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.3.0/dist/alphaTab.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/tab-player.js" defer></script>
+</head>
+
+<body class="tab-page">
+
+    <header class="glass-header" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 24px; margin: 24px auto; width: 90%; max-width: 1152px; border-radius: 9999px; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); z-index: 100;">
+        
+        <div style="display: flex; align-items: center; justify-content: flex-start; min-width: 0; gap: 15px;">
+            <button onclick="window.history.back()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'" title="Voltar">
+                <i class="fas fa-chevron-left" style="font-size: 0.9rem; margin-right: 2px;"></i>
+            </button>
+            
+            <a href="../index.html" class="logo">jojoTools</a>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; padding: 0 10px;">
+            <span id="hdr-title" style="font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; max-width: 400px; text-align: center;">
+                — TAB PLAYER —
+            </span>
+        </div>
+
+        <nav style="display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
+            <a href="https://github.com/IllanSpala" target="_blank" style="color: white; text-decoration: none; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <i class="fab fa-github"></i>
+            </a>
+            
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn">Acessar</a>
+            
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'">
+                <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
+                <span id="auth-username" class="chip-name"></span>
+            </div>
+        </nav>
+    </header>
+
+    <div class="tp-body">
+
+        <div id="upload-zone" class="upload-zone">
+            <label class="upload-card" for="file-input">
+                <span class="upload-icon"></span>
+                <h2 class="upload-title">Tab Player</h2>
+                <p class="upload-sub" data-i18n="tp_upload_sub">Arraste ou clique para abrir um arquivo Guitar Pro</p>
+                <p class="upload-hint">.gp &nbsp;·&nbsp; .gp3 &nbsp;·&nbsp; .gp4 &nbsp;·&nbsp; .gp5 &nbsp;·&nbsp; .gpx
+                </p>
+                <span class="upload-cta glass-btn">
+                    <i class="fas fa-folder-open"></i>&nbsp; <span data-i18n="tp_upload_btn">Escolher arquivo</span>
+                </span>
+            </label>
+            <input type="file" id="file-input" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp6" hidden>
+            
+            <div id="recent-tabs-container" class="tp-hidden" style="margin-top: 40px; width: 100%; max-width: 600px; animation: fadeInUp 0.4s ease;">
+                <h3 style="color:var(--accent-a, #718d99); font-size: 0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; text-align:left;" data-i18n="prof_recent_tabs">Tabs Recentes</h3>
+                <div id="recent-tabs-list" style="display:flex; flex-direction:column; gap:8px;">
+                    <p style="color:rgba(255,255,255,0.3); font-size:0.85rem;"><i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="prof_load_recent">Carregando…</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="at-viewport" class="at-viewport tp-hidden">
+            <div id="top-track-name" class="top-track-name tp-hidden"></div>
+
+            <div id="at-element"></div>
+            <div id="at-overlay" class="at-overlay">
+                <div class="at-spinner"></div>
+                <span id="at-overlay-msg" data-i18n="tp_loading">Carregando soundfont e renderizando…</span>
+            </div>
+        </div>
+
+        <div id="count-overlay" class="count-overlay tp-hidden">
+            <span id="count-num" class="count-num"></span>
+        </div>
+
+        <!-- ══ YouTube Sync Panel (hidden until YouTube mode is active) ══ -->
+        <div id="yt-panel" class="yt-panel tp-hidden">
+            <div class="yt-panel-header">
+                <span class="yt-panel-title"><i class="fab fa-youtube"></i> YouTube Sync</span>
+                <button id="yt-panel-collapse" class="yt-collapse-btn" title="Recolher"><i class="fas fa-chevron-up"></i></button>
+            </div>
+            <div id="yt-panel-body" class="yt-panel-inner">
+                <!-- URL Input Row -->
+                <div class="yt-row">
+                    <input type="text" id="yt-url" class="yt-url-input" data-i18n-placeholder="yt_url_ph" placeholder="Cole a URL do YouTube aqui…">
+                    <button id="yt-load-btn" class="yb-text yt-load-btn" data-i18n="yt_btn_load"><i class="fas fa-play-circle"></i> Carregar</button>
+                </div>
+                <!-- Player + Controls Row -->
+                <div class="yt-body-row">
+                    <div id="yt-player-wrap" class="yt-player-wrap">►</div>
+                    <div class="yt-controls">
+                        <div class="yt-offset-row">
+                            <span class="clbl" id="yt-offset-lbl-txt" data-i18n="yt_offset_lbl">Offset</span>
+                            <button id="yt-offset-minus" class="yb-icon" title="-50ms"><i class="fas fa-minus"></i></button>
+                            <input type="range" id="yt-offset-val" min="-10000" max="10000" value="0">
+                            <button id="yt-offset-plus" class="yb-icon" title="+50ms"><i class="fas fa-plus"></i></button>
+                            <input type="number" id="yt-offset-num" class="yt-offset-num" value="0" step="50" title="Offset em ms">
+                            <span class="yt-offset-unit">ms</span>
+                        </div>
+                        <div class="yt-sync-row">
+                            <button id="yt-community-load" class="yb-text" data-i18n="yt_community_load"><i class="fas fa-cloud-download-alt"></i> Carregar sync da comunidade</button>
+                            <button id="yt-community-save" class="yb-text" data-i18n="yt_community_save"><i class="fas fa-cloud-upload-alt"></i> Salvar meu offset</button>
+                        </div>
+                        <p class="yt-hint-txt" id="yt-hint-txt" data-i18n="yt_hint">Ajuste o offset para sincronizar o vídeo com a partitura.</p>
+                        <span id="yt-status"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ctrl-bar" class="ctrl-bar tp-hidden">
+
+            <div class="ctrl-row r1">
+
+                <div class="cg">
+                    <button id="btn-stop" class="cb" data-i18n-title="tp_btn_stop">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                    <button id="btn-play" class="cb cb-play" data-i18n-title="tp_btn_play">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <span id="tp-pos" class="tp-pos">0:00</span>
+                </div>
+                <div class="cs"></div>
+
+                <div class="cg">
+                    <span class="clbl" data-i18n="tp_lbl_countin">CONTAGEM</span>
+                    <button id="btn-cin" class="cb on" data-i18n-title="tp_btn_cin">
+                        <i class="fas fa-hourglass-start"></i>
+                    </button>
+                </div>
+                <div class="cs"></div>
+
+                <div class="cg cg-bpm">
+                    <span class="clbl" data-i18n="tp_lbl_speed">ANDAMENTO</span>
+                    <button id="btn-speed-down" class="ct" title="-5%" style="margin-right:-2px;">
+                        <i class="fas fa-minus" style="font-size: 0.6rem;"></i>
+                    </button>
+                    <input type="range" id="speed-sl" class="speed-sl" min="25" max="200" value="100">
+                    <button id="btn-speed-up" class="ct" title="+5%" style="margin-left:-2px;">
+                        <i class="fas fa-plus" style="font-size: 0.6rem;"></i>
+                    </button>
+                    <div class="bpm-box">
+                        <span id="bpm-val" class="bpm-val">—</span>
+                        <span class="bpm-unit">BPM</span>
+                    </div>
+                    <span id="speed-pct" class="speed-pct">100%</span>
+                </div>
+                <div class="cs"></div>
+
+                <div class="cg">
+                    <span class="clbl" data-i18n="tp_lbl_loop">LOOP &amp; ESTUDO</span>
+                    <button id="btn-loop" class="cb" data-i18n-title="tp_btn_loop">
+                        <i class="fas fa-redo-alt"></i>
+                    </button>
+                    <button id="btn-loop-sel" class="cb" data-i18n-title="tp_btn_loopsel">
+                        <i class="fas fa-object-group"></i>
+                    </button>
+                    <span id="loop-lbl" class="loop-lbl tp-hidden"></span>
+                    <button id="btn-loop-clr" class="ct loop-lbl tp-hidden" data-i18n-title="tp_btn_loopclr">✕</button>
+                    <button id="btn-mark-learned" class="cb tp-hidden"
+                        style="color:#2ecc71; border-color:#2ecc71; margin-left: 5px !important;"
+                        data-i18n-title="tp_btn_mark">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                </div>
+                <div class="cs"></div>
+
+                <div class="cg">
+                    <span class="clbl" data-i18n="tp_lbl_metro">METRÔNOMO</span>
+                    <button id="btn-metro" class="cb on" data-i18n-title="tp_btn_metro">
+                        <i class="fas fa-drum"></i>
+                    </button>
+                    <div id="metro-dots" class="metro-dots"></div>
+                    <input type="range" id="metro-vol" class="metro-vol-sl" min="0" max="100" value="70">
+                    <i class="fas fa-volume-up metro-vol-icon"></i>
+                </div>
+                <div class="cs"></div>
+
+                <!-- View Mode: TAB / SCORE -->
+                <div class="cg">
+                    <span class="clbl" data-i18n="tp_lbl_mode">MODO</span>
+                    <div class="vtoggle">
+                        <button class="vb" data-mode="tab">TAB</button>
+                        <button class="vb active" data-mode="score">SCORE</button>
+                    </div>
+                </div>
+                <div class="cs"></div>
+
+                <!-- Audio Source: AlphaTab / YouTube -->
+                <div class="cg">
+                    <span class="clbl" data-i18n="yt_lbl_source">ÁUDIO</span>
+                    <div class="vtoggle">
+                        <button class="vb active" data-audio="alphatab" data-i18n="yt_btn_alpha">AlphaTab</button>
+                        <button class="vb" data-audio="youtube" data-i18n="yt_btn_youtube">YouTube</button>
+                    </div>
+                </div>
+
+                <div style="flex:1"></div>
+
+                <div class="cg">
+                    <label class="cb" data-i18n-title="tp_btn_open" style="cursor:pointer">
+                        <i class="fas fa-folder-open"></i>
+                        <input type="file" id="file-input-2" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp6" hidden>
+                    </label>
+                </div>
+
+            </div>
+            <div class="row-divider"></div>
+
+            <div class="ctrl-row r2" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                <div style="display:flex; align-items:center;">
+                    <span class="clbl" data-i18n="tp_lbl_tracks"
+                        style="flex-shrink:0;padding-right:10px; border-right:1px solid rgba(255,255,255,0.07);margin-right:10px;">
+                        TRACK
+                    </span>
+
+                    <div class="tsel-wrap">
+                        <button id="btn-tsel" class="tsel-btn">
+                            <span id="tsel-name">...</span>
+                            <i class="fas fa-chevron-up tsel-arrow" id="tsel-arr"></i>
+                        </button>
+
+                        <div id="tpop" class="tpop tp-hidden">
+                            <div class="tpop-head">
+                                <span class="clbl" data-i18n="tp_sel_track">SELECIONAR TRACK</span>
+                            </div>
+                            <div id="tpop-list" class="tpop-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mark as learned button (right side) -->
+                <div style="display:flex; align-items:center; gap: 16px;">
+                    <button id="btn-mark-studied" class="cb" style="color:#2ecc71; border-color:rgba(46,204,113,0.4); width:28px; height:28px;" data-i18n-title="tp_btn_mark">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="loop-hint" class="loop-hint tp-hidden">
+        <i class="fas fa-object-group"></i>
+        <span id="loop-hint-txt" data-i18n="tp_hint_start">Clique no compasso INICIAL do loop</span>
+        <kbd>Esc</kbd>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+/* ============================================================
+   login.css — Login page styles
+   ============================================================ */
+
+.login-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #111111;
+    color: #F5F3EE;
+}
+
+.login-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* ── Card ── */
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05); /* Brutalist contrast */
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity:0; transform: translateY(24px); }
+    to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── Icon ── */
+.login-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #F5F3EE;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    color: #E63B2E;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* ── Titles ── */
+.login-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-b, #fff);
+    margin: 0 0 6px;
+    letter-spacing: 0.02em;
+}
+
+.login-sub {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 28px;
+    text-align: center;
+}
+
+/* ── Google Button ── */
+.login-btn {
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+}
+
+.google-btn {
+    background: rgba(255,255,255,0.93);
+    color: #333;
+}
+.google-btn:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+.primary-btn {
+    background: #F5F3EE;
+    color: #111111;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+.primary-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* ── Divider ── */
+.login-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.8rem;
+}
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+}
+
+/* ── Form ── */
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.field-group input {
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: var(--accent-b, #fff);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.field-group input::placeholder { color: rgba(255,255,255,0.25); }
+.field-group input:focus { border-color: var(--accent-a, #718d99); background: rgba(255,255,255,0.1); }
+
+/* ── Register link ── */
+.login-link-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: center;
+    padding: 4px 0;
+    transition: color 0.2s;
+}
+.login-link-btn span { color: var(--accent-b, #b3c6d0); text-decoration: underline; }
+.login-link-btn:hover { color: rgba(255,255,255,0.7); }
+
+/* ── Error ── */
+.login-error {
+    background: rgba(231, 76, 60, 0.18);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    color: #e74c3c;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+    margin: 0;
+}
