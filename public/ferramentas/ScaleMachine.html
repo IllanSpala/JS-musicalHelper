@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Machine — jojozelan Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/scale.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/scale.js" defer></script>
+</head>
+<body class="scale-page">
+
+
+    <header class="glass-header">
+        <a href="../index.html" class="logo" style="text-decoration:none; color:inherit;">jojoTools</a>
+        <nav class="center-links">
+            <a href="PolyMetro.html">Metrônomo</a>
+            <a href="ScaleMachine.html">Escalas</a>
+            <a href="TabPlayer.html">Tablatura</a>
+            <a href="HarmonicMap.html">Gravidade</a>
+        </nav>
+        <nav style="display:flex; align-items:center; gap:14px;">
+            <a href="https://github.com/IllanSpala" target="_blank" style="color:white;text-decoration:none;font-size:1.2rem;">
+                <i class="fab fa-github"></i>
+            </a>
+            <!-- Auth UI -->
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:0.8rem; padding:7px 16px;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+                <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
+                <span id="auth-username" class="chip-name"></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="glow-text" data-i18n="scale_title">Praticador de Escalas</h1>
+            <div class="controls-bar">
+                <div class="control-group">
+                    <label data-i18n="lbl_instrument">Instrumento</label>
+                    <div class="instrument-toggle">
+                        <button class="instrument-btn active" data-instrument="guitar">Guitar</button>
+                        <button class="instrument-btn" data-instrument="bass">Bass</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label data-i18n="lbl_root">Tônica</label>
+                    <select id="root-select"></select>
+                </div>
+                <div class="control-group">
+                    <label data-i18n="lbl_scale">Escala</label>
+                    <select id="scale-select"></select>
+                </div>
+                <div class="control-group">
+                    <label data-i18n="lbl_tuning">Afinação</label>
+                    <select id="tuning-select"></select>
+                </div>
+                <div class="control-group">
+                    <label data-i18n="lbl_frets">Trastes</label>
+                    <div class="fret-range-group">
+                        <input type="range" id="fret-count" min="10" max="24" value="22">
+                        <span id="fret-count-label">22</span>
+                    </div>
+                </div>
+                <!-- Action Buttons: Play Scale & Random -->
+                <div class="control-group" style="flex-direction: row; align-items: center; justify-content: flex-end; padding-top: 15px; gap: 8px;">
+                    <button id="play-scale-btn" class="glass-btn small-btn" title="Tocar Escala" style="padding: 10px 12px; font-size: 1.2rem;">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="random-scale-btn" class="glass-btn small-btn" title="Escala Aleatória" style="padding: 10px 12px; font-size: 1.2rem;">
+                        <i class="fas fa-dice"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="legend-section">
+                <span class="section-label" data-i18n="legend_title">Notas da escala — clique para detalhes e som</span>
+                <div id="scale-legend"></div>
+            </div>
+
+            <div id="fretboard-scroll"><div id="fretboard"></div></div>
+
+            <!-- Formula section: fills the empty space between fretboard and bottom row -->
+            <div class="formula-section">
+                <span id="formula-section-label" class="section-label">Fórmula da escala</span>
+                <div id="scale-formula"></div>
+                <button id="practice-btn"> Praticar Escala</button>
+            </div>
+
+            <div class="bottom-row">
+                <div class="custom-tuning-section">
+                    <span class="section-label" data-i18n="custom_tuning_title">Afinação personalizada</span>
+                    <div id="custom-tuning"></div>
+                </div>
+                <div class="actions-area">
+                    <button id="scale-info-btn" data-i18n="btn_about">Sobre a Escala</button>
+                    <button id="chug-btn">
+                        CHUG <span id="chug-label">7ª corda B</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Practice overlay (centered modal with translucent backdrop) -->
+            <div id="practice-overlay" class="prac-overlay hidden">
+                <div class="prac-modal">
+                    <!-- Header -->
+                    <div class="prac-header">
+                        <span>🎯</span>
+                        <span id="prac-title" class="prac-title-text"></span>
+                        <button id="prac-close-btn" class="prac-close">✕</button>
+                    </div>
+
+                    <!-- Mode tabs -->
+                    <div class="prac-mode-tabs">
+                        <button class="prac-mode-tab active" data-mode="complete"> Complete</button>
+                        <button class="prac-mode-tab" data-mode="degree"> Grau → Nota</button>
+                        <button class="prac-mode-tab" data-mode="note"> Nota → Grau</button>
+                        <button class="prac-mode-tab" data-mode="listen"> Ouça</button>
+                    </div>
+
+                    <!-- Exercise content -->
+                    <div id="prac-exercise-wrap" class="prac-exercise-area"></div>
+
+                    <!-- Footer: result + buttons -->
+                    <div class="prac-footer">
+                        <div id="prac-result" class="prac-result"></div>
+                        <div class="prac-actions">
+                            <button id="prac-verify-btn" class="prac-action-btn verify">Verificar</button>
+                            <button id="prac-new-btn" class="prac-action-btn new-btn">Nova Escala</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="scale-info-panel" class="bottom-panel"></div>
+        </div>
+    </main>
+
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500" style="background:#0d0d12">
+  <defs>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- 12 segment colours cycling around the wheel -->
+  </defs>
+
+  <!-- Outer major ring — 12 segments of 30° each -->
+  <!-- C -->
+  <path d="M250,250 L250,30 A220,220 0 0,1 360,80 Z" fill="#7b5ea7" opacity="0.85" filter="url(#glow)"/>
+  <!-- G -->
+  <path d="M250,250 L360,80 A220,220 0 0,1 450,185 Z" fill="#6a4fc2" opacity="0.85" filter="url(#glow)"/>
+  <!-- D -->
+  <path d="M250,250 L450,185 A220,220 0 0,1 470,310 Z" fill="#4a5fc2" opacity="0.85" filter="url(#glow)"/>
+  <!-- A -->
+  <path d="M250,250 L470,310 A220,220 0 0,1 385,430 Z" fill="#3a7abf" opacity="0.85" filter="url(#glow)"/>
+  <!-- E -->
+  <path d="M250,250 L385,430 A220,220 0 0,1 250,470 Z" fill="#2ea8a0" opacity="0.85" filter="url(#glow)"/>
+  <!-- B -->
+  <path d="M250,250 L250,470 A220,220 0 0,1 115,430 Z" fill="#3dbf7a" opacity="0.85" filter="url(#glow)"/>
+  <!-- F#/Gb -->
+  <path d="M250,250 L115,430 A220,220 0 0,1 30,310 Z" fill="#8abf3d" opacity="0.85" filter="url(#glow)"/>
+  <!-- Db -->
+  <path d="M250,250 L30,310 A220,220 0 0,1 50,185 Z" fill="#c2a43a" opacity="0.85" filter="url(#glow)"/>
+  <!-- Ab -->
+  <path d="M250,250 L50,185 A220,220 0 0,1 140,80 Z" fill="#c26f3a" opacity="0.85" filter="url(#glow)"/>
+  <!-- Eb -->
+  <path d="M250,250 L140,80 A220,220 0 0,1 215,33 Z" fill="#bf3a3a" opacity="0.85" filter="url(#glow)"/>
+  <!-- Bb -->
+  <path d="M250,250 L215,33 A220,220 0 0,1 250,30 Z" fill="#9e3abf" opacity="0.85" filter="url(#glow)"/>
+  <!-- F -->
+  <path d="M250,250 L140,80 A220,220 0 0,0 250,30 Z" fill="#9e3abf" opacity="0.85" filter="url(#glow)"/>
+
+  <!-- Divider lines -->
+  <g stroke="rgba(255,255,255,0.15)" stroke-width="1">
+    <line x1="250" y1="250" x2="250" y2="30"/>
+    <line x1="250" y1="250" x2="360" y2="80"/>
+    <line x1="250" y1="250" x2="450" y2="185"/>
+    <line x1="250" y1="250" x2="470" y2="310"/>
+    <line x1="250" y1="250" x2="385" y2="430"/>
+    <line x1="250" y1="250" x2="250" y2="470"/>
+    <line x1="250" y1="250" x2="115" y2="430"/>
+    <line x1="250" y1="250" x2="30" y2="310"/>
+    <line x1="250" y1="250" x2="50" y2="185"/>
+    <line x1="250" y1="250" x2="140" y2="80"/>
+    <line x1="250" y1="250" x2="215" y2="33"/>
+  </g>
+
+  <!-- Outer ring border -->
+  <circle cx="250" cy="250" r="220" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+  <!-- Inner ring boundary -->
+  <circle cx="250" cy="250" r="145" fill="#0d0d1a" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <!-- Innermost circle -->
+  <circle cx="250" cy="250" r="75" fill="#13131f" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+  <!-- Major key labels (outer) -->
+  <g fill="white" font-family="'Inter', system-ui, sans-serif" font-weight="700" font-size="18" text-anchor="middle" dominant-baseline="middle">
+    <text x="250" y="65">C</text>
+    <text x="340" y="95">G</text>
+    <text x="415" y="170">D</text>
+    <text x="440" y="265">A</text>
+    <text x="405" y="360">E</text>
+    <text x="320" y="425">B</text>
+    <text x="220" y="445">F♯</text>
+    <text x="120" y="415">D♭</text>
+    <text x="65" y="340">A♭</text>
+    <text x="55" y="240">E♭</text>
+    <text x="90" y="145">B♭</text>
+    <text x="170" y="78">F</text>
+  </g>
+
+  <!-- Minor key labels (inner ring) -->
+  <g fill="rgba(200,200,255,0.7)" font-family="'Inter', system-ui, sans-serif" font-weight="600" font-size="12" text-anchor="middle" dominant-baseline="middle">
+    <text x="250" y="120">Am</text>
+    <text x="318" y="138">Em</text>
+    <text x="370" y="192">Bm</text>
+    <text x="383" y="262">F♯m</text>
+    <text x="360" y="332">C♯m</text>
+    <text x="305" y="382">G♯m</text>
+    <text x="238" y="397">E♭m</text>
+    <text x="168" y="375">B♭m</text>
+    <text x="122" y="325">Fm</text>
+    <text x="110" y="255">Cm</text>
+    <text x="132" y="185">Gm</text>
+    <text x="185" y="138">Dm</text>
+  </g>
+
+  <!-- Center label -->
+  <text x="250" y="246" fill="rgba(255,255,255,0.9)" font-family="'Inter', system-ui, sans-serif" font-weight="800" font-size="14" text-anchor="middle" dominant-baseline="middle">CIRCLE</text>
+  <text x="250" y="264" fill="rgba(180,160,255,0.8)" font-family="'Inter', system-ui, sans-serif" font-weight="600" font-size="11" text-anchor="middle" dominant-baseline="middle">OF FIFTHS</text>
+</svg>

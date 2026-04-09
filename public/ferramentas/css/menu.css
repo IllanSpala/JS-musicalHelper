@@ -1,0 +1,251 @@
+:root {
+    --bg-start: #E8E4DD;        
+    --bg-end: #E8E4DD;          
+    --glass-bg: #F5F3EE; 
+    --glass-border: rgba(17, 17, 17, 0.1);
+    --text-color: #111111;
+    --btn-bg: #E63B2E;
+    --btn-hover: #111111;
+    --accent-a: #E63B2E;
+}
+
+body {
+    font-family: 'Space Grotesk', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    background-color: #111111; /* Forces full brutalist black to avoid gray divisions */
+    background-image: var(--noise-pattern);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* HEADER - LIQUID GLASS EFFECT (Idêntico ao React) */
+.glass-header {
+    height: auto;
+    padding: 12px 24px; 
+    margin: 24px auto; 
+    width: 90%;
+    max-width: 1152px; 
+    border-radius: 9999px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2); /* Vidro negro translúcido */
+    backdrop-filter: blur(24px);    /* Alto desfoque */
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+}
+
+/* LOGO */
+.logo { 
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900; 
+    letter-spacing: -1px; 
+    font-size: 1.25rem; 
+    color: #ffffff !important; /* Força o branco absoluto */
+    text-shadow: 0 0 10px rgba(255,255,255,0.4) !important; /* Brilho suave igual ao do React */
+    text-decoration: none;
+}
+
+/* LINKS CENTRAIS */
+.center-links {
+    display: none;
+    gap: 28px;
+}
+@media (min-width: 860px) {
+    .center-links { display: flex; align-items: center; }
+}
+.center-links a {
+    text-decoration: none;
+    color: #d1d5db; /* Cinza claro platinado */
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+.center-links a:hover {
+    color: #ffffff; /* Fica branco puro ao passar o mouse */
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Efeito de brilho no hover */
+}
+
+/* MAIN LAYOUT */
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* CONTAINER (The Hub) */
+.container {
+    background: #111111;
+    color: #F5F3EE;
+    border: none;
+    border-radius: 0;
+    padding: 2rem 5%;
+    text-align: center;
+    box-shadow: none;
+    height: 100%;
+    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* SIDEBAR DELETED */
+
+/* FOOTER & LANGUAGE SELECTOR */
+.glass-footer {
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    flex-shrink: 0;
+}
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.lang-selector {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.lang-flag {
+    cursor: pointer;
+    width: 26px;
+    height: auto;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    opacity: 0.3;
+    filter: grayscale(50%);
+}
+
+.lang-flag:hover {
+    opacity: 0.8;
+    filter: grayscale(0%);
+    transform: scale(1.1);
+}
+
+.lang-flag.active {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+h1.glow-text {
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-top: 0;
+    text-shadow: none;
+    color: #F5F3EE;
+    text-transform: uppercase;
+}
+
+/* TOOL CARDS */
+.tools-grid {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tool-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    width: 200px;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255,255,255,0.1);
+}
+
+.icon-box { font-size: 2rem; margin-bottom: 10px; color: #af8c62; }
+
+/* BUTTONS */
+.glass-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    margin-top: auto;
+    text-decoration: none;
+    background: var(--btn-bg);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.glass-btn:hover { background: var(--btn-hover); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+/* small-btn variant */
+.glass-btn.small-btn {
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    border-radius: 50px;
+}
+
+/* ── Auth Chip (shown when logged in) ── */
+.auth-chip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+}
+.auth-chip:hover { transform: scale(1.1); }
+
+.chip-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(17,17,17,0.15);
+    flex-shrink: 0;
+}
+
+.chip-name { display: none !important; }
+
+/* Utility: hide element */
+.tp-hidden { display: none !important; }

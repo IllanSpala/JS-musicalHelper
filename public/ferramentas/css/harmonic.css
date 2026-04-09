@@ -1,0 +1,250 @@
+.harmonic-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(15, 15, 15, 0.7);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+}
+
+.wheel-wrapper {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    margin: 20px auto;
+}
+
+/* Base style for nodes positioned in JS */
+.wheel-node {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    margin-left: -24px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #111;
+    border: 2px solid;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    user-select: none;
+    z-index: 2;
+}
+
+.wheel-node:hover {
+    transform: scale(1.15);
+}
+
+.wheel-node.active {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px currentColor;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Liquid glass sustain highlight */
+.wheel-node.sustain-active {
+    background: color-mix(in srgb, var(--sustain-color, currentColor) 28%, rgba(255, 255, 255, 0.08));
+    backdrop-filter: blur(6px) saturate(1.4);
+    -webkit-backdrop-filter: blur(6px) saturate(1.4);
+    box-shadow:
+        0 0 18px var(--sustain-color, currentColor),
+        inset 0 0 14px rgba(255, 255, 255, 0.12),
+        inset 0 0 4px rgba(255, 255, 255, 0.2);
+    border-width: 2.5px;
+    animation: sustain-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sustain-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255, 255, 255, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 28px var(--sustain-color, currentColor), inset 0 0 20px rgba(255, 255, 255, 0.18);
+    }
+}
+
+
+.wheel-node-degree {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.wheel-node-note {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.wheel-guide {
+    text-align: center;
+    max-width: 500px;
+    min-height: 60px;
+    margin: 0 auto;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ccc;
+    padding: 10px;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.wheel-guide.active {
+    transform: translateY(-5px);
+    color: #fff;
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 16px;
+    /* Ajustei o padding para dar mais respiro */
+    border-radius: 25px;
+    /* De 8px para 25px para deixá-lo bem arredondado */
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+    /* O SEGREDO MÁGICO: Impede que o input vaze e seja cortado */
+}
+
+.glass-input:focus {
+    border-color: #5b50d6;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(91, 80, 214, 0.4);
+}
+
+/* Controla especificamente o texto do placeholder ("Ex: C, Dm7") */
+.glass-input::placeholder {
+    font-size: 0.85rem;
+    /* Diminui o texto do placeholder */
+    color: rgba(255, 255, 255, 0.4);
+    /* Deixa a cor um pouco mais suave */
+}
+
+/* Removed redundant harmonic wrappers, relying entirely on .container's monolithic box */
+.custom-scroll {
+    overflow-y: auto;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+@media (max-width: 1000px) {
+    .container {
+        flex-direction: column !important;
+        align-items: center;
+    }
+}
+
+@media (max-width: 900px) {
+    .harmonic-main-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+
+.chord-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    max-width: 400px;
+}
+
+.chord-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.chord-diagram-card {
+    background: rgba(15, 15, 15, 0.5);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.chord-diagram-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.chord-svg {
+    background: transparent;
+}
+
+#harmonic-svg-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
+}
+
+/* Fretboard modification to highlight only chord notes */
+.fretboard-fade .fret-cell .note-dot:not(.active-chord-note) {
+    opacity: 0.1;
+    filter: blur(1px);
+    pointer-events: none;
+}
+
+.fretboard-fade .fret-cell .note-dot.active-chord-note {
+    opacity: 1;
+    box-shadow: 0 0 10px currentColor;
+    border: 2px solid #fff;
+}

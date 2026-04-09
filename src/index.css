@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Fira+Code:wght@300..700&family=Instrument+Serif:ital@0;1&family=Sora:wght@100..800&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Preset C - Brutalist Signal */
+    --color-primary: #E8E4DD;
+    --color-accent: #E63B2E;
+    --color-background: #F5F3EE;
+    --color-text: #111111;
+    --color-dark: #111111;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-drama: 'DM Serif Display', serif;
+    --font-data: 'Space Mono', monospace;
+  }
+
+  [data-theme='vapor'] {
+    /* Preset D - Vapor Clinic */
+    --color-primary: #0A0A14;
+    --color-accent: #7B61FF;
+    --color-background: #F0EFF4; /* Note: inverted card backgrounds from primary heavy dark */
+    --color-text: #18181B;
+    --color-dark: #05050A; /* Even deeper void for philosophy/footer */
+
+    --font-heading: 'Sora', sans-serif;
+    --font-drama: 'Instrument Serif', serif;
+    --font-data: 'Fira Code', monospace;
+  }
+
+  html, body {
+    @apply bg-primary text-textDark antialiased overflow-x-hidden;
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .noise-overlay {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    opacity: 0.05;
+  }
+
+  .premium-btn {
+    @apply overflow-hidden relative inline-flex items-center justify-center font-heading font-bold rounded-full transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:scale-[1.03] active:scale-[0.98];
+  }
+  
+  .premium-btn-accent {
+    @apply premium-btn bg-accent text-white px-8 py-4;
+  }
+
+  .premium-link {
+    @apply transition-transform duration-300 ease-out hover:-translate-y-[1px];
+  }
+}

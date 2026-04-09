@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonic Map — jojozelan Tools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/scale.css">
+    <link rel="stylesheet" href="css/harmonic.css">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="js/script.js" defer></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/harmonic.js" defer></script>
+</head>
+
+<body class="scale-page fretboard-fade">
+
+    <header class="glass-header">
+        <a href="../index.html" class="logo" style="text-decoration:none; color:inherit;">jojoTools</a>
+        <nav class="center-links">
+            <a href="PolyMetro.html">Metrônomo</a>
+            <a href="ScaleMachine.html">Escalas</a>
+            <a href="TabPlayer.html">Tablatura</a>
+            <a href="HarmonicMap.html">Gravidade</a>
+        </nav>
+        <nav style="display:flex; align-items:center; gap:14px;">
+            <a href="https://github.com/IllanSpala" target="_blank"
+                style="color:white;text-decoration:none;font-size:1.2rem;">
+                <i class="fab fa-github"></i>
+            </a>
+            <!-- Auth UI -->
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn"
+                style="font-size:0.8rem; padding:7px 16px;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'"
+                style="cursor:pointer;">
+                <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
+                <span id="auth-username" class="chip-name"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Modal (Oculto global) -->
+    <div id="info-modal" class="chord-modal">
+        <h3 style="color:#5b50d6; margin-top:0;">Como funciona a Gravidade Emocional?</h3>
+        <p style="color:#f2f2f2; margin-bottom:12px; font-size:15px; line-height:1.5;"><strong>Lado Direito (Graus
+                Naturais):</strong> Energias puras, abertas, expansivas e doces.</p>
+        <p style="color:#f2f2f2; margin-bottom:12px; font-size:15px; line-height:1.5;"><strong>Lado Esquerdo (Graus
+                Bemóis e 4):</strong> Energias de contração, sombrias, tensas e trágicas.</p>
+        <p style="color:#f2f2f2; margin-bottom:12px; font-size:15px; line-height:1.5;"><strong>Eixo Vertical (1 e
+                #4):</strong> O repouso absoluto vs. A tensão alienígena máxima.</p>
+        <button id="btn-close-info" class="glass-btn small-btn" style="margin-top:20px;">Entendi</button>
+    </div>
+
+
+
+    <!-- MAIN PAGE: Single Block Flexbox Layout -->
+    <main
+        style="display:flex; justify-content:center; align-items:flex-start; min-height:85vh; padding:20px; width:100%; box-sizing:border-box;">
+
+        <!-- THE SINGLE BOX -->
+        <div class="harmonic-container"
+            style="display:flex; flex-direction:row; justify-content:space-between; align-items:stretch; width:100%; max-width:1600px; padding:40px; gap:20px; background:rgba(0,0,0,0.4); border-radius:15px; border:1px solid rgba(255,255,255,0.05); box-shadow:0 8px 30px rgba(0,0,0,0.5);">
+            <!-- ESQUERDA: Painel Acorde e SVG -->
+            <div
+                style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:280px; padding-right:20px; max-height:80vh;">
+                <div style="text-align:center; margin-bottom:20px; flex-shrink:0;">
+                    <h3 style="margin:0 0 15px 0; font-size:1.3rem; color:#fff;">Painel do Acorde</h3>
+                    <input type="text" id="chord-input" placeholder="Ex: C, Dm7" value="" class="glass-input"
+                        style="width:100%; text-align:center; margin-bottom:15px;">
+                    <div id="chord-suggestions" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
+                    </div>
+                </div>
+
+                <h4 style="font-size:1rem; color:#ccc; text-align:center; margin-bottom:10px; flex-shrink:0;">Shapes
+                    (CAGED)</h4>
+                <div id="chord-cards-container" class="custom-scroll"
+                    style="flex:1; overflow-y:auto; padding-right:8px; display:flex; flex-direction:column; gap:15px;">
+                    <div style="text-align:center; color:#888; font-size:1rem; margin-top:20px;">
+                        Clique num grau na roda central para gerar suas cifras arrastáveis.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTRO: Título, Roda e Info -->
+            <div
+                style="flex:1.5; display:flex; flex-direction:column; align-items:center; min-width:400px; flex-shrink:0;">
+                <div style="display:flex; align-items:center; justify-content:center; gap: 20px; margin-bottom:20px;">
+                    <h1 class="glow-text" style="font-size:2.4rem; margin:0;">Gravidade Emocional</h1>
+                    <button id="btn-info" class="glass-btn small-btn" title="Informações"><i
+                            class="fas fa-question-circle"></i></button>
+                </div>
+
+                <div class="controls-bar" style="justify-content:center; width:100%; margin-bottom:30px;">
+                    <div class="control-group">
+                        <label>Sustain Mode</label>
+                        <div style="display:flex; align-items:center;">
+                            <div class="instrument-toggle">
+                                <button id="toggle-sustain-btn" class="instrument-btn"
+                                    style="min-width: 80px;">Off</button>
+                            </div>
+                            <button id="btn-random-root" class="instrument-btn"
+                                style="padding: 0 15px; margin-left:10px;" title="Tônica Aleatória"><i
+                                    class="fas fa-dice"></i></button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>Timbre</label>
+                        <div class="instrument-toggle">
+                            <button id="btn-timbre-guitar" class="instrument-btn active"
+                                data-timbre="guitar">Violão</button>
+                            <button id="btn-timbre-piano" class="instrument-btn" data-timbre="piano">Piano</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roda Central -->
+                <div style="position:relative; width:100%; display:flex; flex-direction:column; align-items:center;">
+                    <div id="wheel-guide" class="wheel-guide" style="margin-bottom:10px;">
+                        <strong style="color:white; font-size:18px;">Comece a explorar:</strong><br />Escolha ou clique
+                        em uma tônica!
+                    </div>
+                    <div id="harmonic-wheel" class="wheel-wrapper" style="width:320px; height:320px;">
+                        <svg id="harmonic-svg-lines"></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIREITA: Sua Progressão -->
+            <div
+                style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:280px; padding-left:20px; max-height:80vh;">
+                <div style="text-align:center; margin-bottom:20px; flex-shrink:0;">
+                    <h3 style="margin:0 0 10px 0; font-size:1.3rem; color:#fff;">Sua Progressão</h3>
+                    <p style="font-size:0.9rem; color:#aaa; margin:0;">Arraste os Shapes para cá</p>
+                </div>
+
+                <div id="progression-dropzone" class="custom-scroll"
+                    style="flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; border:2px dashed rgba(255,255,255,0.1); border-radius:10px; min-height:200px;">
+                    <div style="text-align:center; color:#888; font-size:1rem; margin-top:20px;">
+                        Aguardando acordes...
+                    </div>
+                </div>
+
+                <div id="progression-summary" class="progression-summary"
+                    style="margin-top:15px; font-size:0.9rem; color:#cf7b38; line-height:1.4; padding:15px; border-radius:8px; display:none; flex-shrink:0;">
+                </div>
+
+                <div
+                    style="text-align:center; margin-top:15px; display:flex; justify-content:center; gap:10px; flex-shrink:0;">
+                    <button id="btn-play-progression" class="glass-btn" style="flex:1;"><i class="fas fa-play"></i>
+                        Tocar </button>
+                    <button id="btn-export-midi" class="glass-btn" style="flex:1; color:#7fddff;"
+                        title="Exportar como MIDI"><i class="fas fa-file-export"></i> MIDI</button>
+                    <button id="btn-clear-progression" class="glass-btn" style="flex:0.3; color:#ff6666;"
+                        title="Limpar"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+
+</html>
