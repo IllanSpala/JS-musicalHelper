@@ -316,7 +316,6 @@ async function loadFile(file) {
     }
 
     const rawName = file.name.replace(/\.[^/.]+$/, '');
-    el('hdr-title').textContent = rawName.replace(/_/g, ' ').replace(/-/g, ' ').toUpperCase();
 
     const reader = new FileReader();
     reader.onload = ev => {
@@ -334,7 +333,6 @@ function loadFromCloud(docId, fileName, url, savedLearnedRanges) {
     learnedRanges = savedLearnedRanges || [];
     
     const rawName = fileName.replace(/\.[^/.]+$/, '');
-    el('hdr-title').textContent = rawName.replace(/_/g, ' ').replace(/-/g, ' ').toUpperCase();
     
     el('upload-zone').classList.add('tp-hidden');
     el('at-viewport').classList.remove('tp-hidden');

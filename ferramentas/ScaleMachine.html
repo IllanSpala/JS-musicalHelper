@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scale Machine — jojozelan Tools</title>
+    <meta name="description" content="Praticador de escalas musicais com diagrama de braço interativo. JS-musicalHelper.">
+    <title>Scale Machine — JS-musicalHelper</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/scale.css">
+    <link rel="stylesheet" href="css/cam-modal.css">
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -16,17 +21,23 @@
     <script src="js/script.js" defer></script>
     <script src="js/firebase.js"></script>
     <script src="js/scale.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="js/camModal.js" defer></script>
+    <script src="js/fretboardMapper.js" defer></script>
+    <script src="js/scaleDetectorEngine.js" defer></script>
+    <script src="js/cameraPipeline.js" defer></script>
+    <script src="js/visionPipeline.js" defer></script>
 </head>
 <body class="scale-page">
 
 
     <header class="glass-header">
-        <a href="../index.html" class="logo" style="text-decoration:none; color:inherit;">jojoTools</a>
+        <a href="../index.html" class="logo" style="text-decoration:none; color:inherit;">JS-musicalHelper</a>
         <nav class="center-links">
             <a href="PolyMetro.html">Metrônomo</a>
-            <a href="ScaleMachine.html">Escalas</a>
+            <a href="ScaleMachine.html" aria-current="page">Escalas</a>
             <a href="TabPlayer.html">Tablatura</a>
-            <a href="HarmonicMap.html">Gravidade</a>
+            <a href="HarmonicMap.html">Intervalos</a>
         </nav>
         <nav style="display:flex; align-items:center; gap:14px;">
             <a href="https://github.com/IllanSpala" target="_blank" style="color:white;text-decoration:none;font-size:1.2rem;">
@@ -73,7 +84,7 @@
                         <span id="fret-count-label">22</span>
                     </div>
                 </div>
-                <!-- Action Buttons: Play Scale & Random -->
+                <!-- Action Buttons: Play Scale, Random & Camera Practice -->
                 <div class="control-group" style="flex-direction: row; align-items: center; justify-content: flex-end; padding-top: 15px; gap: 8px;">
                     <button id="play-scale-btn" class="glass-btn small-btn" title="Tocar Escala" style="padding: 10px 12px; font-size: 1.2rem;">
                         <i class="fas fa-play"></i>
@@ -90,6 +101,8 @@
             </div>
 
             <div id="fretboard-scroll"><div id="fretboard"></div></div>
+
+
 
             <!-- Formula section: fills the empty space between fretboard and bottom row -->
             <div class="formula-section">
@@ -116,7 +129,6 @@
                 <div class="prac-modal">
                     <!-- Header -->
                     <div class="prac-header">
-                        <span>🎯</span>
                         <span id="prac-title" class="prac-title-text"></span>
                         <button id="prac-close-btn" class="prac-close">✕</button>
                     </div>
@@ -147,6 +159,219 @@
         </div>
     </main>
 
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CAM PRACTICE MODAL — Etapa 1: Onboarding & Camera Setup
+         Developed by: JS-musicalHelper Vision Pipeline
+         ════════════════════════════════════════════════════════════════ -->
+    <div id="camPracticeModal" role="dialog" aria-modal="true" aria-labelledby="cam-modal-heading">
+        <div class="cam-modal-container">
+
+            <!-- Header -->
+            <div class="cam-modal-header">
+                <div class="cam-modal-title">
+                    <div class="cam-icon-badge">📷</div>
+                    <h2 id="cam-modal-heading">Praticar com Câmera</h2>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span id="cam-status-badge" class="cam-status-badge status-checking">
+                        <span class="cam-status-dot"></span>
+                        <span id="cam-status-text">Verificando câmera...</span>
+                    </span>
+                    <button id="cam-modal-close" aria-label="Fechar modal" title="Fechar (ESC)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="cam-modal-body">
+
+                <!-- LEFT: Camera Viewport + Onboarding Layer -->
+                <div class="cam-onboarding-panel">
+                    <!-- Embedded Video & Canvas -->
+                    <div class="cam-viewport-container">
+                        <video id="camPracticeVideo" autoplay playsinline muted class="cam-video-blur mirror-mode"></video>
+                        <canvas id="camPracticeCanvas"></canvas>
+                        
+                        <!-- Overlay Header when Active -->
+                        <div id="cam-active-overlay-bar" class="cam-active-overlay-bar cam-hidden">
+                            <span class="cam-live-dot">🔴 AO VIVO</span>
+                            <span id="cam-live-scale-badge">Escala: <strong id="cam-live-scale-txt">C Maior</strong></span>
+                            <span id="cam-fps-badge" class="cam-fps-badge"><i class="fas fa-bolt"></i> <span id="cam-fps-val">60</span> FPS</span>
+                            <button id="cam-autocalib-btn" class="cam-overlay-btn" title="Auto-Calibrar pelo posicionamento da Mão">
+                                ✨ Identificação Automática
+                            </button>
+                            <button id="cam-toggle-help-btn" class="cam-overlay-btn" title="Exibir / Ocultar Dicas">
+                                <i class="fas fa-info-circle"></i> Dicas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Onboarding Content Overlay (Blurred background until Start) -->
+                    <div id="cam-onboarding-content" class="cam-onboarding-content">
+                        <p class="cam-section-label">Antes de começar</p>
+
+                        <!-- Instruction Cards -->
+                        <div class="cam-instruction-cards">
+                            <div class="cam-instr-card">
+                                <div class="cam-instr-icon light">💡</div>
+                                <h4>Iluminação adequada</h4>
+                                <p>Use iluminação frontal e uniforme. Evite janelas atrás de você ou ambientes muito escuros.</p>
+                            </div>
+                            <div class="cam-instr-card">
+                                <div class="cam-instr-icon pos">🎸</div>
+                                <h4>Posição da Guitarra</h4>
+                                <p>Enquadre o braço da guitarra horizontalmente na câmera. Mantenha o fundo limpo e neutro.</p>
+                            </div>
+                            <div class="cam-instr-card">
+                                <div class="cam-instr-icon hand">🖐️</div>
+                                <h4>Visibilidade da Mão</h4>
+                                <p>Deixe sua mão totalmente visível na câmera. Evite luvas ou acessórios que cubram os dedos.</p>
+                            </div>
+                        </div>
+
+                        <!-- Smartphone Webcam Tip -->
+                        <div class="cam-tip-box">
+                            <div class="cam-tip-icon">📱</div>
+                            <div class="cam-tip-content">
+                                <strong>Dica — Usar Celular como Webcam HD:</strong>
+                                <p>Sem webcam no PC? Instale o aplicativo <strong>Irium Webcam</strong> ou <strong>DroidCam</strong> no celular e PC para transmitir via Wi-Fi ou USB com alta definição.</p>
+                            </div>
+                        </div>
+
+                        <div class="cam-divider"></div>
+
+                        <p class="cam-section-label">Como funciona</p>
+
+                        <!-- How it works -->
+                        <div class="cam-how-steps">
+                            <div class="cam-step">
+                                <span class="cam-step-num">1</span>
+                                <p>A IA detecta sua <strong>mão em tempo real</strong> via MediaPipe HandLandmarker — 100% local e privado.</p>
+                            </div>
+                            <div class="cam-step">
+                                <span class="cam-step-num">2</span>
+                                <p>As <strong>notas da escala ativa</strong> (Tônica, 2ª, 3ª…) aparecem sobrepostas diretamente sobre seus dedos no vídeo.</p>
+                            </div>
+                            <div class="cam-step">
+                                <span class="cam-step-num">3</span>
+                                <p>Ao pressionar uma nota da escala, o braço virtual <strong>ilumina a casa</strong> correspondente e toca o som.</p>
+                            </div>
+                            <div class="cam-step">
+                                <span class="cam-step-num">4</span>
+                                <p>Pressione <strong>Q</strong> ou feche o modal a qualquer momento para retornar ao braço virtual.</p>
+                            </div>
+                        </div>
+
+                        <!-- Error box -->
+                        <div id="cam-error-box" class="cam-error-box">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span class="cam-error-msg">Erro desconhecido.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT: Settings Panel -->
+                <div class="cam-settings-panel">
+
+                    <p class="cam-section-label">Configurações & Escala</p>
+
+                    <!-- Interactive Scale Switchers Inside Modal -->
+                    <div class="cam-setting-row">
+                        <label class="cam-setting-label">Tônica da Escala</label>
+                        <select id="cam-modal-root-select" class="cam-modal-select"></select>
+                    </div>
+
+                    <div class="cam-setting-row">
+                        <label class="cam-setting-label">Tipo de Escala</label>
+                        <select id="cam-modal-scale-select" class="cam-modal-select"></select>
+                    </div>
+
+                    <div class="cam-setting-row">
+                        <label class="cam-setting-label">Instrumento & Cordas</label>
+                        <select id="cam-modal-inst-select" class="cam-modal-select">
+                            <option value="guitar6" selected>Guitarra / Violão (6 Cordas)</option>
+                            <option value="guitar7">Guitarra (7 Cordas)</option>
+                            <option value="bass4">Baixo (4 Cordas)</option>
+                            <option value="bass5">Baixo (5 Cordas)</option>
+                        </select>
+                    </div>
+
+                    <div class="cam-setting-row">
+                        <label class="cam-setting-label">Trastes da Guitarra</label>
+                        <select id="cam-modal-frets-select" class="cam-modal-select">
+                            <option value="22">22 Trastes</option>
+                            <option value="24" selected>24 Trastes</option>
+                            <option value="27">27 Trastes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="cam-setting-row">
+                        <div class="cam-setting-header">
+                            <span class="cam-setting-label">Som ao Acertar</span>
+                            <div class="cam-toggle-wrap">
+                                <label class="cam-toggle">
+                                    <input type="checkbox" id="cam-audio-toggle">
+                                    <span class="cam-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cam-setting-row">
+                        <div class="cam-setting-header">
+                            <span class="cam-setting-label">Exibir Esqueleto das Mãos</span>
+                            <div class="cam-toggle-wrap">
+                                <label class="cam-toggle" title="Desenha o esqueleto rastreador sobre as mãos">
+                                    <input type="checkbox" id="cam-skeleton-toggle" checked>
+                                    <span class="cam-toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resolution -->
+                    <div class="cam-setting-row">
+                        <span class="cam-setting-label">Resolução da Câmera</span>
+                        <div class="cam-resolution-pills">
+                            <button class="cam-res-pill active" data-res="720p">720p</button>
+                            <button class="cam-res-pill" data-res="1080p">1080p</button>
+                        </div>
+                    </div>
+
+                    <!-- Mirror View -->
+                    <div class="cam-setting-row">
+                        <div class="cam-setting-header">
+                            <span class="cam-setting-label">Espelhamento (Mirror View)</span>
+                        </div>
+                        <div class="cam-toggle-wrap">
+                            <label class="cam-toggle" title="Espelha a imagem da câmera horizontalmente">
+                                <input type="checkbox" id="cam-mirror-toggle" checked>
+                                <span class="cam-toggle-slider"></span>
+                            </label>
+                            <span id="cam-mirror-label" class="cam-toggle-value">Ligado</span>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="cam-cta-area">
+                        <button id="cam-start-btn" disabled>
+                            <div class="btn-spinner"></div>
+                            <span class="btn-text">🚀 Iniciar Câmera e Rastreamento</span>
+                        </button>
+                        <p class="cam-privacy-note">
+                            <i class="fas fa-shield-alt"></i>
+                            Processamento 100% local. Nenhuma imagem é enviada para servidores externos.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /camPracticeModal -->
 
 </body>
 </html>

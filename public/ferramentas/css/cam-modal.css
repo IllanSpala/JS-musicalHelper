@@ -1,0 +1,970 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CAM PRACTICE MODAL — Dark Glassmorphic UI
+   JS-musicalHelper | Etapa 1: Onboarding & Camera Setup
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Botão "Praticar com Câmera" na toolbar ─────────────────────────────── */
+#open-cam-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.03em;
+    background: linear-gradient(135deg, rgba(0,255,180,0.18) 0%, rgba(91,80,214,0.22) 100%);
+    border: 1.5px solid rgba(0,255,180,0.45);
+    color: #00ffb4;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(.4,0,.2,1);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 18px rgba(0,255,180,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+#open-cam-modal-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,255,180,0.08), rgba(91,80,214,0.08));
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+#open-cam-modal-btn:hover {
+    background: linear-gradient(135deg, rgba(0,255,180,0.28) 0%, rgba(91,80,214,0.32) 100%);
+    border-color: rgba(0,255,180,0.7);
+    box-shadow: 0 0 28px rgba(0,255,180,0.25), 0 4px 20px rgba(91,80,214,0.2);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+#open-cam-modal-btn:hover::before { opacity: 1; }
+
+#open-cam-modal-btn:active {
+    transform: translateY(0px);
+    box-shadow: 0 0 12px rgba(0,255,180,0.15);
+}
+
+#open-cam-modal-btn i {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 6px rgba(0,255,180,0.6));
+}
+
+/* ── Pulse animation on button icon ────────────────────────────────────── */
+@keyframes camPulse {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(0,255,180,0.5)); }
+    50%       { filter: drop-shadow(0 0 10px rgba(0,255,180,1)); }
+}
+#open-cam-modal-btn i { animation: camPulse 2.4s ease-in-out infinite; }
+
+/* ── Modal Backdrop ─────────────────────────────────────────────────────── */
+#camPracticeModal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 6, 18, 0.82);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+#camPracticeModal.cam-modal-open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ── Modal Container (16:9) ─────────────────────────────────────────────── */
+.cam-modal-container {
+    position: relative;
+    width: min(92vw, 1250px);
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(145deg,
+        rgba(16,16,32,0.92) 0%,
+        rgba(22,14,50,0.90) 50%,
+        rgba(12,20,36,0.92) 100%);
+    border: 1px solid rgba(91,80,214,0.35);
+    border-radius: 22px;
+    box-shadow:
+        0 0 0 1px rgba(0,255,180,0.06),
+        0 32px 80px rgba(0,0,0,0.65),
+        0 0 60px rgba(91,80,214,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    overflow: hidden;
+    transform: scale(0.94) translateY(20px);
+    transition: transform 0.32s cubic-bezier(.34,1.56,.64,1);
+    display: flex;
+    flex-direction: column;
+}
+
+#camPracticeModal.cam-modal-open .cam-modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* Decorative corner glow */
+.cam-modal-container::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(0,255,180,0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+.cam-modal-container::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(91,80,214,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* ── Modal Header ───────────────────────────────────────────────────────── */
+.cam-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 26px 14px;
+    border-bottom: 1px solid rgba(91,80,214,0.2);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.cam-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cam-modal-title h2 {
+    margin: 0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #00ffb4, #5b50d6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.cam-modal-title .cam-icon-badge {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, rgba(0,255,180,0.15), rgba(91,80,214,0.2));
+    border: 1px solid rgba(0,255,180,0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.cam-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(91,80,214,0.4);
+    color: rgba(180,170,255,0.9);
+    background: rgba(91,80,214,0.1);
+    transition: all 0.3s;
+}
+
+.cam-status-badge.status-ok {
+    color: #00ffb4;
+    border-color: rgba(0,255,180,0.4);
+    background: rgba(0,255,180,0.08);
+}
+
+.cam-status-badge.status-error {
+    color: #ff6b6b;
+    border-color: rgba(255,107,107,0.4);
+    background: rgba(255,107,107,0.08);
+}
+
+.cam-status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
+}
+
+@keyframes dotPulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+.cam-status-badge.status-checking .cam-status-dot { animation: dotPulse 1s infinite; }
+
+/* ── Close Button ───────────────────────────────────────────────────────── */
+#cam-modal-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.6);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+#cam-modal-close:hover {
+    background: rgba(255,80,80,0.15);
+    border-color: rgba(255,80,80,0.4);
+    color: #ff6b6b;
+    transform: rotate(90deg);
+}
+
+/* ── Modal Body ─────────────────────────────────────────────────────────── */
+.cam-modal-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Onboarding & Camera Viewport Panel (Left) ─────────────────────────── */
+.cam-onboarding-panel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #04040c;
+}
+
+/* Embedded Camera & Canvas Container */
+.cam-viewport-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+}
+
+video#camPracticeVideo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+video#camPracticeVideo.cam-video-blur {
+    filter: blur(14px) brightness(0.4) saturate(1.2);
+    transform: scale(1.08);
+}
+
+video#camPracticeVideo.cam-video-sharp {
+    filter: none;
+    transform: scale(1);
+}
+
+video#camPracticeVideo.mirror-mode {
+    transform: scaleX(-1);
+}
+
+video#camPracticeVideo.cam-video-blur.mirror-mode {
+    transform: scaleX(-1) scale(1.08);
+}
+
+canvas#camPracticeCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Active Mode Overlay Bar on Video */
+.cam-active-overlay-bar {
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    right: 16px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(10, 10, 24, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    backdrop-filter: blur(12px);
+    font-family: 'Space Grotesk', sans-serif;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.cam-active-overlay-bar.cam-hidden {
+    display: none !important;
+}
+
+.cam-live-dot {
+    color: #ff6b6b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+#cam-live-scale-badge {
+    font-size: 0.84rem;
+    color: rgba(220, 220, 240, 0.9);
+}
+
+#cam-live-scale-badge strong {
+    color: #00ffb4;
+    font-weight: 700;
+}
+
+.cam-fps-badge {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #00ffb4;
+    background: rgba(0, 255, 180, 0.12);
+    border: 1px solid rgba(0, 255, 180, 0.3);
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.04em;
+}
+
+.cam-overlay-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cam-overlay-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cam-overlay-btn.active {
+    background: rgba(0, 255, 180, 0.2);
+    border-color: #00ffb4;
+    color: #00ffb4;
+    box-shadow: 0 0 10px rgba(0, 255, 180, 0.4);
+}
+
+/* Onboarding Content (Overlay over Blurred Video) */
+.cam-onboarding-content {
+    position: relative;
+    z-index: 3;
+    padding: 20px 24px;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(8, 8, 20, 0.55);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(91,80,214,0.3) transparent;
+}
+
+.cam-onboarding-content.cam-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.cam-onboarding-content::-webkit-scrollbar { width: 4px; }
+.cam-onboarding-content::-webkit-scrollbar-track { background: transparent; }
+.cam-onboarding-content::-webkit-scrollbar-thumb { background: rgba(91,80,214,0.3); border-radius: 2px; }
+
+.cam-section-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(0,255,180,0.6);
+    margin-bottom: 2px;
+}
+
+/* Instruction Cards */
+.cam-instruction-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.cam-instr-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.cam-instr-card:hover {
+    background: rgba(91,80,214,0.08);
+    border-color: rgba(91,80,214,0.3);
+    transform: translateY(-2px);
+}
+
+.cam-instr-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(0,255,180,0.03) 100%);
+    pointer-events: none;
+}
+
+.cam-instr-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.cam-instr-icon.light  { background: rgba(255,200,50,0.12);  border: 1px solid rgba(255,200,50,0.25);  }
+.cam-instr-icon.pos    { background: rgba(0,255,180,0.10);   border: 1px solid rgba(0,255,180,0.2);    }
+.cam-instr-icon.hand   { background: rgba(91,80,214,0.12);   border: 1px solid rgba(91,80,214,0.25);   }
+
+.cam-instr-card h4 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgba(255,255,255,0.9);
+}
+
+.cam-instr-card p {
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: rgba(180,180,200,0.7);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Divider */
+.cam-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(91,80,214,0.25), transparent);
+    margin: 2px 0;
+}
+
+/* How it works list */
+.cam-how-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cam-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.cam-step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,255,180,0.15), rgba(91,80,214,0.2));
+    border: 1px solid rgba(0,255,180,0.3);
+    color: #00ffb4;
+    font-size: 0.68rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.cam-step p {
+    margin: 0;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: rgba(190,190,210,0.85);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.cam-step p strong {
+    color: rgba(255,255,255,0.95);
+    font-weight: 700;
+}
+
+/* ── Settings Panel (Right) ─────────────────────────────────────────────── */
+.cam-settings-panel {
+    border-left: 1px solid rgba(91,80,214,0.18);
+    background: rgba(8,8,22,0.85);
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    z-index: 5;
+    overflow-y: auto;
+}
+
+.cam-settings-panel::-webkit-scrollbar { width: 4px; }
+.cam-settings-panel::-webkit-scrollbar-track { background: transparent; }
+.cam-settings-panel::-webkit-scrollbar-thumb { background: rgba(91,80,214,0.3); border-radius: 2px; }
+
+.cam-modal-select {
+    width: 100%;
+    background: rgba(16, 16, 36, 0.95);
+    border: 1px solid rgba(0, 255, 180, 0.25);
+    border-radius: 10px;
+    color: #fff;
+    padding: 8px 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cam-modal-select:hover, .cam-modal-select:focus {
+    border-color: rgba(0, 255, 180, 0.6);
+    box-shadow: 0 0 10px rgba(0, 255, 180, 0.15);
+}
+
+.cam-modal-select option {
+    background: #0e0e22;
+    color: #fff;
+}
+
+/* Toggle Switch */
+.cam-setting-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cam-setting-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cam-setting-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(220,220,240,0.9);
+}
+
+/* Toggle Switch */
+.cam-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cam-toggle {
+    position: relative;
+    width: 42px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.cam-toggle input {
+    opacity: 0;
+    width: 0; height: 0;
+    position: absolute;
+}
+
+.cam-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.cam-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 2px;
+    background: rgba(180,180,200,0.6);
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.cam-toggle input:checked + .cam-toggle-slider {
+    background: linear-gradient(135deg, rgba(0,255,180,0.25), rgba(91,80,214,0.2));
+    border-color: rgba(0,255,180,0.5);
+}
+
+.cam-toggle input:checked + .cam-toggle-slider::before {
+    transform: translateX(20px);
+    background: #00ffb4;
+    box-shadow: 0 0 8px rgba(0,255,180,0.6);
+}
+
+.cam-toggle-value {
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgba(180,180,200,0.7);
+    min-width: 34px;
+}
+
+/* Resolution Picker */
+.cam-resolution-pills {
+    display: flex;
+    gap: 6px;
+}
+
+.cam-res-pill {
+    flex: 1;
+    padding: 7px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(180,180,200,0.7);
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.cam-res-pill:hover {
+    background: rgba(91,80,214,0.15);
+    border-color: rgba(91,80,214,0.35);
+    color: rgba(220,220,255,0.9);
+}
+
+.cam-res-pill.active {
+    background: linear-gradient(135deg, rgba(0,255,180,0.15), rgba(91,80,214,0.2));
+    border-color: rgba(0,255,180,0.45);
+    color: #00ffb4;
+    box-shadow: 0 0 10px rgba(0,255,180,0.1);
+}
+
+/* Error box */
+.cam-error-box {
+    display: none;
+    background: rgba(255,80,80,0.08);
+    border: 1px solid rgba(255,80,80,0.3);
+    border-radius: 10px;
+    padding: 10px 12px;
+    gap: 8px;
+    align-items: flex-start;
+    color: #ff9090;
+    font-size: 0.72rem;
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.5;
+}
+
+.cam-error-box.visible { display: flex; }
+.cam-error-box i { flex-shrink: 0; margin-top: 2px; }
+
+/* ── CTA Button ─────────────────────────────────────────────────────────── */
+.cam-cta-area {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    bottom: -20px; /* Offset the padding of the parent */
+    background: rgba(8,8,22,0.95);
+    padding: 15px 0 20px 0;
+    z-index: 10;
+    box-shadow: 0 -15px 20px -10px rgba(8,8,22,0.95);
+}
+
+#cam-start-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #00ffb4 0%, #5b50d6 100%);
+    color: #060612;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 4px 20px rgba(0,255,180,0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+#cam-start-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+#cam-start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,255,180,0.35), 0 4px 12px rgba(91,80,214,0.25);
+}
+
+#cam-start-btn:hover::before { opacity: 1; }
+
+#cam-start-btn:active { transform: translateY(0); }
+
+#cam-start-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#cam-start-btn .btn-spinner {
+    display: none;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #060612;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+}
+
+#cam-start-btn.loading .btn-spinner { display: block; }
+#cam-start-btn.loading .btn-text    { display: none; }
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.cam-privacy-note {
+    text-align: center;
+    font-size: 0.64rem;
+    color: rgba(150,150,170,0.6);
+    font-family: 'Space Grotesk', sans-serif;
+    line-height: 1.4;
+}
+
+.cam-privacy-note i { font-size: 0.6rem; margin-right: 3px; }
+
+/* ── Responsive adaptation ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .cam-modal-container {
+        width: 95vw;
+        aspect-ratio: auto;
+        max-height: 90vh;
+    }
+
+    .cam-modal-body {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+
+    .cam-settings-panel {
+        border-left: none;
+        border-top: 1px solid rgba(91,80,214,0.18);
+    }
+
+    .cam-instruction-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Smartphone Tip Box ─────────────────────────────────────────────────── */
+.cam-tip-box {
+    background: rgba(0, 255, 180, 0.04);
+    border: 1px solid rgba(0, 255, 180, 0.18);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.cam-tip-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.cam-tip-content {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.74rem;
+    line-height: 1.45;
+    color: rgba(200, 220, 240, 0.85);
+}
+
+.cam-tip-content strong {
+    color: #00ffb4;
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LIVE CAMERA PRACTICE VIEWPORT — Rendered below virtual fretboard
+   ══════════════════════════════════════════════════════════════════════════ */
+#camPracticeViewport {
+    margin: 24px auto;
+    width: 100%;
+    max-width: 980px;
+    background: #090914;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+#camPracticeViewport.cam-viewport-hidden {
+    display: none !important;
+}
+
+.cam-viewport-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: rgba(18, 18, 32, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.cam-vp-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cam-vp-badge {
+    background: rgba(255, 70, 70, 0.12);
+    border: 1px solid rgba(255, 70, 70, 0.35);
+    color: #ff6b6b;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+#cam-vp-scale-title {
+    font-size: 0.88rem;
+    color: rgba(220, 220, 240, 0.9);
+}
+
+#cam-vp-scale-title strong {
+    color: #00ffb4;
+    font-weight: 700;
+}
+
+.cam-vp-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cam-vp-controls .stop-btn {
+    background: rgba(255, 80, 80, 0.12);
+    border: 1px solid rgba(255, 80, 80, 0.3);
+    color: #ff8080;
+}
+
+.cam-vp-controls .stop-btn:hover {
+    background: rgba(255, 80, 80, 0.25);
+    border-color: rgba(255, 80, 80, 0.6);
+    color: #fff;
+}
+
+.cam-video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #020208;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+video#camPracticeVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    transition: transform 0.25s ease;
+}
+
+video#camPracticeVideo.mirror-mode {
+    transform: scaleX(-1);
+}
+
+canvas#camPracticeCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.cam-vp-overlay-info {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.cam-fret-guide-box {
+    background: rgba(8, 8, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    padding: 8px 18px;
+    border-radius: 30px;
+    color: rgba(220, 220, 240, 0.95);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+

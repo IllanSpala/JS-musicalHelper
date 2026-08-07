@@ -8,13 +8,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Protocol() {
   const containerRef = useRef(null);
-  
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       const cards = gsap.utils.toArray('.protocol-card');
-      
+
       cards.forEach((card, i) => {
-        if(i < cards.length - 1) {
+        if (i < cards.length - 1) {
           ScrollTrigger.create({
             trigger: card,
             start: 'top top',
@@ -65,8 +65,8 @@ export default function Protocol() {
     },
     {
       step: '04',
-      title: 'Gravidade Harmônica',
-      desc: 'Explore a teia emocional dos acordes em tempo real. Construa progressões arrastando shapes CAGED, ouça arpejos e descubra a lógica por trás de cada grau tonal.',
+      title: 'Mapa de Intervalos',
+      desc: 'Visualize a teia harmônica dos acordes em tempo real. Construa progressões arrastando shapes CAGED, ouça arpejos e descubra a lógica dos graus tonais e intervalos.',
       href: "./ferramentas/HarmonicMap.html",
       bgUrl: "./circle_of_fifths.svg"
     }
@@ -77,7 +77,7 @@ export default function Protocol() {
     <section ref={containerRef} id="protocol" className="relative w-full bg-background z-20">
       {protocols.map((proto, idx) => (
         <div key={idx} className="protocol-card min-h-screen w-full flex flex-col md:flex-row items-center justify-center p-8 bg-background border-b border-textDark/10">
-          
+
           <div className="w-full md:w-1/2 p-8 md:p-20 relative z-10 flex flex-col justify-center items-start">
             <span className="font-data text-accent text-sm mb-4 block opacity-80">SYS.STEP_{proto.step}</span>
             <h2 className="font-heading font-black text-5xl md:text-7xl text-textDark uppercase mb-8">
@@ -93,14 +93,14 @@ export default function Protocol() {
 
           <div className="w-full md:w-1/2 h-[50vh] md:h-screen p-4 md:p-10 flex items-center justify-center relative overflow-hidden group">
             <a href={proto.href} className="relative w-full aspect-square md:aspect-auto md:w-[80%] md:h-[70%] bg-primary rounded-[3rem] overflow-hidden drop-shadow-2xl transition-transform duration-700 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.02]">
-               <div 
-                 className="absolute inset-0 bg-cover bg-center opacity-80 grayscale mix-blend-multiply transition-all duration-700"
-                 style={{ backgroundImage: `url(${proto.bgUrl})` }}
-               ></div>
-               <div className="absolute inset-0 border border-textDark/10 rounded-[3rem]"></div>
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-80 grayscale mix-blend-multiply transition-all duration-700"
+                style={{ backgroundImage: `url(${proto.bgUrl})` }}
+              ></div>
+              <div className="absolute inset-0 border border-textDark/10 rounded-[3rem]"></div>
             </a>
           </div>
-          
+
         </div>
       ))}
     </section>

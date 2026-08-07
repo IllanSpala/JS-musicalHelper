@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tab Player — jojozelan Tools</title>
+    <meta name="description" content="Leitor de tablaturas em tempo real com AlphaTab. JS-musicalHelper.">
+    <title>Tab Player — JS-musicalHelper</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/tab-player.css">
@@ -22,30 +23,22 @@
 
 <body class="tab-page">
 
-    <header class="glass-header" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 12px 24px; margin: 24px auto; width: 90%; max-width: 1152px; border-radius: 9999px; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); z-index: 100;">
-        
-        <div style="display: flex; align-items: center; justify-content: flex-start; min-width: 0; gap: 15px;">
-            <button onclick="window.history.back()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.transform='scale(1)'" title="Voltar">
-                <i class="fas fa-chevron-left" style="font-size: 0.9rem; margin-right: 2px;"></i>
-            </button>
-            
-            <a href="../index.html" class="logo">jojoTools</a>
-        </div>
-
-        <div style="display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; padding: 0 10px;">
-            <span id="hdr-title" style="font-size: 0.78rem; letter-spacing: 3px; text-transform: uppercase; color: #d1d5db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; max-width: 400px; text-align: center;">
-                — TAB PLAYER —
-            </span>
-        </div>
-
-        <nav style="display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
-            <a href="https://github.com/IllanSpala" target="_blank" style="color: white; text-decoration: none; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <header class="glass-header">
+        <a href="../index.html" class="logo">JS-musicalHelper</a>
+        <nav class="center-links">
+            <a href="PolyMetro.html">Metrônomo</a>
+            <a href="ScaleMachine.html">Escalas</a>
+            <a href="TabPlayer.html" aria-current="page">Tablatura</a>
+            <a href="HarmonicMap.html">Intervalos</a>
+        </nav>
+        <nav style="display:flex; align-items:center; gap:14px;">
+            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" style="color:white; text-decoration:none; font-size:1.2rem;">
                 <i class="fab fa-github"></i>
             </a>
-            
-            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn">Acessar</a>
-            
-            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'">
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:0.8rem; padding:7px 16px;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" style="cursor:pointer;">
                 <img id="auth-avatar" src="" alt="avatar" class="chip-avatar">
                 <span id="auth-username" class="chip-name"></span>
             </div>

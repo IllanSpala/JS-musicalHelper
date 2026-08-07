@@ -1,228 +1,224 @@
-.harmonic-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-    background: rgba(15, 15, 15, 0.7);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 30px;
+/* ============================================================
+ * harmonic.css — Mapa de Intervalos | JS-musicalHelper
+ * Design System: Dark Glassmorphic Premium
+ * ============================================================ */
+
+/* ── Variáveis de Design (Tokens) ─────────────────────────── */
+:root {
+    --hm-primary:       #5b50d6;
+    --hm-primary-glow:  rgba(91, 80, 214, 0.45);
+    --hm-panel-bg:      rgba(255, 255, 255, 0.03);
+    --hm-panel-border:  rgba(255, 255, 255, 0.07);
+    --hm-surface:       rgba(255, 255, 255, 0.05);
+    --hm-surface-hover: rgba(255, 255, 255, 0.09);
+    --hm-text-muted:    rgba(255, 255, 255, 0.45);
+    --hm-radius-card:   14px;
+    --hm-radius-pill:   50px;
+    --hm-transition:    0.25s ease;
 }
 
-.wheel-wrapper {
-    position: relative;
-    width: 360px;
-    height: 360px;
-    margin: 20px auto;
-}
-
-/* Base style for nodes positioned in JS */
-.wheel-node {
-    position: absolute;
-    width: 48px;
-    height: 48px;
-    margin-top: -24px;
-    margin-left: -24px;
-    border-radius: 50%;
+/* ── Layout Principal (Main) ─────────────────────────────── */
+/* Override menu.css main para o Mapa de Intervalos */
+body.hm-page main {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: #111;
-    border: 2px solid;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-    user-select: none;
-    z-index: 2;
-}
-
-.wheel-node:hover {
-    transform: scale(1.15);
-}
-
-.wheel-node.active {
-    transform: scale(1.2);
-    box-shadow: 0 0 15px currentColor;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Liquid glass sustain highlight */
-.wheel-node.sustain-active {
-    background: color-mix(in srgb, var(--sustain-color, currentColor) 28%, rgba(255, 255, 255, 0.08));
-    backdrop-filter: blur(6px) saturate(1.4);
-    -webkit-backdrop-filter: blur(6px) saturate(1.4);
-    box-shadow:
-        0 0 18px var(--sustain-color, currentColor),
-        inset 0 0 14px rgba(255, 255, 255, 0.12),
-        inset 0 0 4px rgba(255, 255, 255, 0.2);
-    border-width: 2.5px;
-    animation: sustain-pulse 2s ease-in-out infinite;
-}
-
-@keyframes sustain-pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255, 255, 255, 0.1);
-    }
-
-    50% {
-        box-shadow: 0 0 28px var(--sustain-color, currentColor), inset 0 0 20px rgba(255, 255, 255, 0.18);
-    }
-}
-
-
-.wheel-node-degree {
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1;
-    margin-bottom: 2px;
-}
-
-.wheel-node-note {
-    font-size: 10px;
-    font-weight: 600;
-    opacity: 0.8;
-}
-
-.wheel-guide {
-    text-align: center;
-    max-width: 500px;
-    min-height: 60px;
-    margin: 0 auto;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #ccc;
-    padding: 10px;
-    transition: all 0.3s ease;
-    transform: translateY(0);
-}
-
-.wheel-guide.active {
-    transform: translateY(-5px);
-    color: #fff;
-}
-
-.glass-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    padding: 10px 16px;
-    /* Ajustei o padding para dar mais respiro */
-    border-radius: 25px;
-    /* De 8px para 25px para deixá-lo bem arredondado */
-    font-family: inherit;
-    font-size: 1rem;
-    outline: none;
-    transition: 0.3s;
+    align-items: flex-start;
+    overflow: hidden;
+    padding: 0 16px 16px;
     box-sizing: border-box;
-    /* O SEGREDO MÁGICO: Impede que o input vaze e seja cortado */
 }
 
-.glass-input:focus {
-    border-color: #5b50d6;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 10px rgba(91, 80, 214, 0.4);
+/* Wrapper externo — o "stage" que segura os 3 painéis */
+.hm-stage {
+    display: grid;
+    grid-template-columns: 1fr 1.55fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 1680px;
+    height: calc(100vh - 100px); /* Deixa espaço pro header */
+    max-height: 900px;
 }
 
-/* Controla especificamente o texto do placeholder ("Ex: C, Dm7") */
-.glass-input::placeholder {
-    font-size: 0.85rem;
-    /* Diminui o texto do placeholder */
-    color: rgba(255, 255, 255, 0.4);
-    /* Deixa a cor um pouco mais suave */
-}
-
-/* Removed redundant harmonic wrappers, relying entirely on .container's monolithic box */
-.custom-scroll {
-    overflow-y: auto;
-}
-
-.custom-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-}
-
-@media (max-width: 1000px) {
-    .container {
-        flex-direction: column !important;
-        align-items: center;
-    }
-}
-
-@media (max-width: 900px) {
-    .harmonic-main-layout {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-
-.chord-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(15, 15, 15, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+/* ── Painel Base (Esquerda & Direita) ────────────────────── */
+.hm-panel {
+    background: var(--hm-panel-bg);
+    border: 1px solid var(--hm-panel-border);
+    border-radius: var(--hm-radius-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    max-width: 400px;
+    overflow: hidden;
+    padding: 20px 16px;
+    gap: 14px;
 }
 
-.chord-modal.active {
-    opacity: 1;
-    pointer-events: auto;
+.hm-panel__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-align: center;
+    flex-shrink: 0;
+    margin: 0;
 }
 
-.cards-container {
+.hm-panel__subtitle {
+    font-size: 0.8rem;
+    color: var(--hm-text-muted);
+    text-align: center;
+    margin: -10px 0 0;
+    flex-shrink: 0;
+}
+
+/* ── Painel Central ──────────────────────────────────────── */
+.hm-center {
     display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    position: relative;
+}
+
+/* Título "Mapa de Intervalos" com gradiente animado */
+.hm-main-title {
+    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin: 0;
+    text-align: center;
+    background: linear-gradient(135deg, #7c6ff7 0%, #d92bb8 50%, #eb2f70 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: hm-title-glow 4s ease-in-out infinite alternate;
+    flex-shrink: 0;
+}
+
+@keyframes hm-title-glow {
+    from { filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4)); }
+    to   { filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6)); }
+}
+
+/* ── Barra de Controles ──────────────────────────────────── */
+.hm-controls-bar {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
     width: 100%;
 }
 
-.chord-diagram-card {
-    background: rgba(15, 15, 15, 0.5);
-    border-radius: 8px;
-    padding: 15px;
+.hm-control-group {
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    gap: 6px;
 }
 
-.chord-diagram-card h4 {
-    margin: 0 0 10px 0;
-    font-size: 1.1rem;
-    color: #fff;
-    letter-spacing: 1px;
+.hm-control-group label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--hm-text-muted);
 }
 
-.chord-svg {
+/* Toggle de instrumento / sustain */
+.hm-toggle-group {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--hm-panel-border);
+    border-radius: var(--hm-radius-pill);
+    padding: 3px;
+    gap: 3px;
+}
+
+.hm-toggle-btn {
     background: transparent;
+    border: none;
+    color: var(--hm-text-muted);
+    border-radius: var(--hm-radius-pill);
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--hm-transition);
+    white-space: nowrap;
+    min-width: 50px;
+    font-family: inherit;
+}
+
+.hm-toggle-btn:hover {
+    color: #fff;
+    background: var(--hm-surface);
+}
+
+.hm-toggle-btn.active {
+    background: var(--hm-primary);
+    color: #fff;
+    box-shadow: 0 2px 12px var(--hm-primary-glow);
+}
+
+/* Botão ícone (dado aleatório) */
+.hm-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--hm-panel-border);
+    background: var(--hm-surface);
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--hm-transition);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.hm-icon-btn:hover {
+    background: var(--hm-surface-hover);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: rotate(15deg) scale(1.05);
+}
+
+/* ── Guia Emocional ─────────────────────────────────────── */
+.hm-wheel-guide {
+    text-align: center;
+    min-height: 68px;
+    max-width: 440px;
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--hm-panel-border);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #aaa;
+    transition: all var(--hm-transition);
+    flex-shrink: 0;
+    backdrop-filter: blur(6px);
+}
+
+.hm-wheel-guide.active {
+    color: #fff;
+    border-color: rgba(91, 80, 214, 0.3);
+    background: rgba(91, 80, 214, 0.06);
+    box-shadow: 0 0 20px rgba(91, 80, 214, 0.12);
+}
+
+/* ── Roda Harmônica ─────────────────────────────────────── */
+.hm-wheel-wrapper {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    flex-shrink: 0;
 }
 
 #harmonic-svg-lines {
@@ -236,7 +232,431 @@
     overflow: visible;
 }
 
-/* Fretboard modification to highlight only chord notes */
+/* Nós da roda */
+.wheel-node {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+    margin-left: -25px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.25s ease;
+    background: #0d0d0d;
+    border: 2px solid;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    user-select: none;
+    z-index: 2;
+}
+
+.wheel-node:hover {
+    transform: scale(1.18) !important;
+    z-index: 10;
+}
+
+.wheel-node.sustain-active {
+    background: color-mix(in srgb, var(--sustain-color, currentColor) 28%, rgba(255, 255, 255, 0.06)) !important;
+    backdrop-filter: blur(6px) saturate(1.4);
+    -webkit-backdrop-filter: blur(6px) saturate(1.4);
+    box-shadow:
+        0 0 20px var(--sustain-color, currentColor),
+        inset 0 0 14px rgba(255, 255, 255, 0.1),
+        inset 0 0 4px rgba(255, 255, 255, 0.18);
+    border-width: 2.5px;
+    animation: hm-sustain-pulse 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+@keyframes hm-sustain-pulse {
+    0%, 100% { box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255,255,255,0.08); }
+    50%       { box-shadow: 0 0 32px var(--sustain-color, currentColor), inset 0 0 22px rgba(255,255,255,0.16); }
+}
+
+.wheel-node-degree {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.wheel-node-note {
+    font-size: 9px;
+    font-weight: 600;
+    opacity: 0.75;
+    line-height: 1;
+}
+
+/* ── Painel Esquerdo: Input + CAGED ─────────────────────── */
+
+/* Input de busca de cifra */
+.hm-chord-input-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.hm-chord-input-wrap .hm-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--hm-text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.glass-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 14px 10px 36px;
+    border-radius: var(--hm-radius-pill);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: var(--hm-transition);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.glass-input:focus {
+    border-color: var(--hm-primary);
+    background: rgba(91, 80, 214, 0.08);
+    box-shadow: 0 0 0 3px var(--hm-primary-glow), 0 0 20px rgba(91, 80, 214, 0.2);
+}
+
+.glass-input::placeholder {
+    font-size: 0.82rem;
+    color: var(--hm-text-muted);
+    font-weight: 400;
+}
+
+/* Badges de sugestão de qualidades */
+.hm-chord-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hm-quality-tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 0 2px;
+}
+
+/* Pills de qualidade (geradas dinamicamente no JS) */
+.hm-quality-pill {
+    padding: 3px 9px;
+    font-size: 0.72rem;
+    font-family: inherit;
+    border-radius: var(--hm-radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: #aaa;
+    cursor: pointer;
+    transition: var(--hm-transition);
+    white-space: nowrap;
+}
+
+.hm-quality-pill:hover {
+    background: var(--hm-surface);
+    color: #ddd;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.hm-quality-pill.active {
+    background: rgba(91, 80, 214, 0.55);
+    border-color: rgba(91, 80, 214, 0.8);
+    color: #fff;
+    box-shadow: 0 1px 8px var(--hm-primary-glow);
+}
+
+/* Títulos de seção internos */
+.hm-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--hm-text-muted);
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Container de cards CAGED (scroll) */
+.hm-cards-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+    padding-bottom: 4px;
+}
+
+.hm-cards-scroll::-webkit-scrollbar { width: 4px; }
+.hm-cards-scroll::-webkit-scrollbar-track { background: transparent; }
+.hm-cards-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+/* Card CAGED individual */
+.chord-diagram-card {
+    background: rgba(15, 15, 15, 0.5);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    cursor: grab;
+    user-select: none;
+    transition: transform var(--hm-transition), border-color var(--hm-transition);
+    position: relative;
+}
+
+.chord-diagram-card::before {
+    content: '⠿';
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+}
+
+.chord-diagram-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.chord-diagram-card:active { cursor: grabbing; }
+
+.chord-diagram-card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+}
+
+.chord-svg { background: transparent; }
+
+/* Estado vazio dos painéis */
+.hm-empty-state {
+    text-align: center;
+    color: var(--hm-text-muted);
+    font-size: 0.88rem;
+    padding: 24px 12px;
+    line-height: 1.6;
+}
+
+/* ── Painel Direito: Progressão ──────────────────────────── */
+
+.hm-dropzone {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    min-height: 100px;
+    transition: border-color var(--hm-transition), background var(--hm-transition);
+}
+
+.hm-dropzone::-webkit-scrollbar { width: 4px; }
+.hm-dropzone::-webkit-scrollbar-track { background: transparent; }
+.hm-dropzone::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+.hm-dropzone.dragover {
+    border-color: var(--hm-primary);
+    background: rgba(91, 80, 214, 0.06);
+    box-shadow: inset 0 0 20px rgba(91, 80, 214, 0.1);
+}
+
+/* Card de acorde na progressão */
+.hm-prog-card {
+    background: var(--hm-surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background var(--hm-transition), transform var(--hm-transition);
+    flex-shrink: 0;
+}
+
+.hm-prog-card:hover { background: var(--hm-surface-hover); }
+
+.hm-prog-card__chord {
+    flex: 1;
+}
+
+.hm-prog-card__chord strong {
+    color: #d92bb8;
+    font-size: 1.05rem;
+    display: block;
+}
+
+.hm-prog-card__chord span {
+    font-size: 0.68rem;
+    color: #777;
+}
+
+.hm-prog-card__svg {
+    transform: scale(0.5);
+    transform-origin: right center;
+    height: 55px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.hm-prog-card__remove {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: rgba(255, 80, 80, 0.5);
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: color var(--hm-transition);
+    padding: 2px 4px;
+}
+
+.hm-prog-card__remove:hover { color: #ff5555; }
+
+/* Mapa Emocional (narrativa) */
+.hm-prog-summary {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(207, 123, 56, 0.08);
+    border: 1px solid rgba(207, 123, 56, 0.18);
+    font-size: 0.82rem;
+    color: #cf7b38;
+    line-height: 1.5;
+    flex-shrink: 0;
+    display: none;
+}
+
+/* Botões de ação */
+.hm-action-row {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.hm-action-row .glass-btn {
+    flex: 1;
+    padding: 9px 10px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.hm-action-row .glass-btn.btn-danger { color: #ff6666; }
+.hm-action-row .glass-btn.btn-accent { color: #7fddff; }
+
+/* ── Modal de Informações ────────────────────────────────── */
+.chord-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--hm-transition);
+}
+
+.chord-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chord-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.chord-modal__box {
+    position: relative;
+    z-index: 1;
+    background: rgba(15, 15, 15, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.chord-modal__box h3 {
+    margin: 0;
+    color: var(--hm-primary);
+    font-size: 1.15rem;
+}
+
+.chord-modal__box p {
+    margin: 0;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ── Responsividade ─────────────────────────────────────── */
+@media (max-width: 1100px) {
+    .hm-stage {
+        grid-template-columns: 1fr 1.4fr 1fr;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 860px) {
+    body.hm-page main {
+        overflow-y: auto;
+        align-items: flex-start;
+    }
+    .hm-stage {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        height: auto;
+        max-height: none;
+    }
+    .hm-center { order: -1; }
+}
+
+/* ── Fretboard helpers (mantidos) ────────────────────────── */
 .fretboard-fade .fret-cell .note-dot:not(.active-chord-note) {
     opacity: 0.1;
     filter: blur(1px);
@@ -247,4 +667,12 @@
     opacity: 1;
     box-shadow: 0 0 10px currentColor;
     border: 2px solid #fff;
+}
+
+/* ── Scrollbar global customizada ────────────────────────── */
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
 }

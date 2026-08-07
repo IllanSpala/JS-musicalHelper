@@ -462,7 +462,8 @@ function initPractice() {
             tab.classList.add('active');
             // Restore verify button (listen mode hides it)
             document.getElementById('prac-verify-btn').style.display = '';
-            generateExercise();
+            // Re-render exercises using the SAME current scale across all modes
+            renderPractice();
         });
     });
 
@@ -481,19 +482,26 @@ function closePractice() {
 }
 
 function generateExercise() {
-    document.getElementById('prac-result').innerHTML = '';
     // pick random root + scale
     const randomRoot  = DISPLAY_ROOTS[Math.floor(Math.random() * DISPLAY_ROOTS.length)];
     const randomScale = SCALE_ORDER[Math.floor(Math.random() * SCALE_ORDER.length)];
     const sNotes = getScaleNotes(randomRoot, randomScale);
     const steps  = getStepIntervals(randomScale);
-    const lang   = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
 
     practiceData = { sNotes, steps, randomRoot, randomScale };
     listenAnswer = null;
+    renderPractice();
+}
+
+function renderPractice() {
+    if (!practiceData) { generateExercise(); return; }
+    document.getElementById('prac-result').innerHTML = '';
+    const lang   = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
+    const { sNotes, steps, randomScale } = practiceData;
+    listenAnswer = null;
 
     const scaleName = SCALE_NAMES[randomScale];
-    document.getElementById('prac-title').textContent = `${randomRoot} ${scaleName}`;
+    document.getElementById('prac-title').textContent = `${practiceData.randomRoot} ${scaleName}`;
 
     const wrap = document.getElementById('prac-exercise-wrap');
 
@@ -678,7 +686,7 @@ function renderModeListen(wrap, sNotes, lang) {
             }
             const res = document.getElementById('prac-listen-result');
             res.innerHTML = correct
-                ? `<span class="prac-win">✅ ${lang === 'en' ? 'Correct! It was' : 'Correto! Era'} ${target.note} (${target.degree})</span>`
+                ? `<span class="prac-win">${lang === 'en' ? 'Correct! It was' : 'Correto! Era'} ${target.note} (${target.degree})</span>`
                 : `<span class="prac-miss">${lang === 'en' ? 'Not quite — it was' : 'Não foi — era'} ${target.note} (${target.degree})</span>`;
         });
     });
@@ -757,7 +765,7 @@ function verifyPractice() {
 
     const res = document.getElementById('prac-result');
     res.innerHTML = allOk
-        ? `<span class="prac-win">✅ ${lang === 'en' ? 'Perfect! All correct!' : 'Perfeito! Tudo certo!'}</span>`
+        ? `<span class="prac-win">${lang === 'en' ? 'Perfect! All correct!' : 'Perfeito! Tudo certo!'}</span>`
         : `<span class="prac-miss">${lang === 'en' ? 'Review the highlighted answers.' : 'Revise as respostas destacadas.'}</span>`;
 }
 

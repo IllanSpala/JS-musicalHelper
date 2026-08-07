@@ -1,4 +1,4 @@
-// harmonic.js - Emotional Gravity Map integration
+// harmonic.js — Mapa de Intervalos | JS-musicalHelper
 const NOTES_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const NOTES_FLAT  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 
@@ -114,62 +114,270 @@ let state = {
     timbre: 'guitar'  // 'guitar' | 'piano'
 };
 
-// AUDIO
-let audioCtx = null;
-let sustainGainNode = null; 
+// =================================================================
+// AUDIO ENGINE v2 — DSP Profissional: Violão Filtrado + Shimmer Reverb
+// Topologia Dry:
+//   OscillatorNode → VoiceGain (ADSR) → LowpassFilter (Damping)
+//     → SubmixGain → MasterGain (0.55) → DynamicsCompressor → destination
+// Topologia Wet (Sustain Mode):
+//   SubmixGain → ShimmerSend → ConvolverNode → HPFilter
+//     → DelayNode ←→ FeedbackGain (loop)
+//     → ShimmerGain → MasterGain → DynamicsCompressor → destination
+// =================================================================
 
-function playNote(midiNote, duration = 1.7, isSustain = false) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
-    const now  = audioCtx.currentTime;
-    
-    if (isSustain && sustainGainNode) {
-        sustainGainNode.gain.cancelScheduledValues(now);
-        sustainGainNode.gain.linearRampToValueAtTime(0.001, now + 0.1);
-    }
-    
-    let mainGain = audioCtx.createGain();
-    
-    const isGuitar = state.timbre === 'guitar';
-    // Guitar: sawtooth-ish rich harmonics with fast decay
-    // Piano: triangle + sine, slower decay
-    const harmonics = isGuitar
-        ? [[1,0.5],[2,0.3],[3,0.15],[4,0.08],[5,0.04]]
-        : [[1,0.6],[2,0.25],[3,0.08],[4,0.02]];
-    const oscType = isGuitar ? 'sawtooth' : 'triangle';
-    const decayMult = isGuitar ? 0.8 : 1.4;
-    
-    harmonics.forEach(([h, amp]) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = h === 1 ? oscType : 'sine';
-        osc.frequency.value = freq * h;
-        
-        const d = duration * decayMult;
-        if (isSustain) {
-            gain.gain.setValueAtTime(amp * 0.35, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + d);
-        } else {
-            gain.gain.setValueAtTime(amp, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + d - 0.1);
+let audioCtx       = null;  // Singleton
+let masterGain     = null;  // Ganho mestre (volume global)
+let compressor     = null;  // DynamicsCompressor — limiter final
+
+// ── Shimmer Bus (Reverb + Sustain infinito) ──────────────────────
+let shimmerGain    = null;  // Ganho de entrada do barramento shimmer
+let shimmerConv    = null;  // ConvolverNode com IR sintético
+let shimmerDelay   = null;  // DelayNode para malha de feedback
+let shimmerFbGain  = null;  // Ganho de feedback da malha
+let shimmerHpf     = null;  // HighpassFilter para o brilho etéreo
+let shimmerOut     = null;  // Ganho de saída do bus shimmer
+let shimmerReady   = false; // Flag: IR carregado?
+
+/**
+ * Gera um AudioBuffer de Resposta ao Impulso (IR) sintético:
+ * ruído estéreo branco exponencialmente amortecido com alta densidade.
+ */
+function createShimmerImpulse(ctx, durationSec = 4.5, decay = 2.2) {
+    const sr      = ctx.sampleRate;
+    const length  = Math.floor(sr * durationSec);
+    const buf     = ctx.createBuffer(2, length, sr);
+    for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        for (let i = 0; i < length; i++) {
+            // Ruído branco * envelope exponencial de amortecimento
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
         }
-        
-        osc.connect(gain);
-        gain.connect(mainGain);
-        osc.start(now);
-        osc.stop(now + d + 0.2);
-    });
-    
-    mainGain.connect(audioCtx.destination);
-    if (isSustain) sustainGainNode = mainGain;
+    }
+    return buf;
 }
 
-function playArpeggio(midiNotes, delay = 0.12, duration = 1.8) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+/**
+ * Singleton: cria/retorna o AudioContext com toda a cadeia de nós.
+ * Inicializa o ShimmerBus na primeira chamada.
+ */
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // ── Compressor/Limiter mestre ───────────────────────────────
+        compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -8;
+        compressor.knee.value      = 4;
+        compressor.ratio.value     = 10;
+        compressor.attack.value    = 0.003;
+        compressor.release.value   = 0.30;
+
+        // ── Master Gain — headroom mais baixo para violão limpo ─────
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.55; // reduzido de 0.82 → elimina estouro
+
+        masterGain.connect(compressor);
+        compressor.connect(audioCtx.destination);
+
+        // ── Shimmer Bus ─────────────────────────────────────────────
+        // Entrada do barramento: controla o volume do efeito shimmer
+        shimmerGain = audioCtx.createGain();
+        shimmerGain.gain.value = 0.0; // começa mudo — ativa com sustainMode
+
+        // ConvolverNode com IR sintético de longa cauda
+        shimmerConv = audioCtx.createConvolver();
+        shimmerConv.buffer = createShimmerImpulse(audioCtx, 4.5, 2.2);
+        shimmerConv.normalize = true;
+
+        // Highpass em 1100 Hz → isola o brilho etéreo / shimmer
+        shimmerHpf = audioCtx.createBiquadFilter();
+        shimmerHpf.type            = 'highpass';
+        shimmerHpf.frequency.value = 1100;
+        shimmerHpf.Q.value         = 0.8;
+
+        // DelayNode para malha de feedback (180ms)
+        shimmerDelay = audioCtx.createDelay(1.0);
+        shimmerDelay.delayTime.value = 0.18;
+
+        // Ganho de feedback: 0.82 → sustain quasi-infinito sem instabilidade
+        shimmerFbGain = audioCtx.createGain();
+        shimmerFbGain.gain.value = 0.82;
+
+        // Saída do bus shimmer → master (com headroom próprio)
+        shimmerOut = audioCtx.createGain();
+        shimmerOut.gain.value = 0.45;
+
+        // Roteamento do Shimmer Bus:
+        // shimmerGain → ConvolverNode → HPF → DelayNode ⟵ FbGain (loop)
+        //                                            ↓
+        //                                      shimmerOut → masterGain
+        shimmerGain.connect(shimmerConv);
+        shimmerConv.connect(shimmerHpf);
+        shimmerHpf.connect(shimmerDelay);
+        shimmerDelay.connect(shimmerFbGain);
+        shimmerFbGain.connect(shimmerDelay); // malha de realimentação
+        shimmerDelay.connect(shimmerOut);
+        shimmerOut.connect(masterGain);
+
+        shimmerReady = true;
+    }
+
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+}
+
+/**
+ * Ativa/desativa o shimmer: fade-in ou fade-out suave de 1.2s.
+ * Chamado pelo botão de Sustain.
+ */
+function setShimmerActive(active) {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    if (!shimmerGain) return;
+    shimmerGain.gain.cancelScheduledValues(now);
+    shimmerGain.gain.setValueAtTime(
+        Math.max(0.0001, shimmerGain.gain.value), now
+    );
+    if (active) {
+        // Fade-in em 0.4s
+        shimmerGain.gain.linearRampToValueAtTime(0.55, now + 0.4);
+    } else {
+        // Fade-out elegante em 1.2s
+        shimmerGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+    }
+}
+
+/**
+ * Toca uma única nota MIDI com:
+ *  - Timbre de violão: triangle + sine harmonics + BiquadFilter (Lowpass Damping)
+ *  - Timbre de piano: triangle clássico com decay longo
+ *  - Roteamento para o Shimmer Bus quando sustainMode ativo
+ *
+ * @param {number}  midiNote  — Nota MIDI (0–127)
+ * @param {number}  duration  — Duração em segundos (decay total)
+ * @param {boolean} isSustain — Legado; mantido para compatibilidade (não usado)
+ * @param {number}  startTime — Tempo absoluto do AudioContext
+ */
+function playNote(midiNote, duration = 1.7, isSustain = false, startTime = null) {
+    const ctx  = getAudioContext();
+    const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+    const now  = Math.max(
+        ctx.currentTime + 0.005,
+        startTime !== null ? startTime : ctx.currentTime
+    );
+
+    const isGuitar = state.timbre === 'guitar';
+
+    // ── VIOLÃO: Harmônicos com triangle/sine + Filtro LP Dinâmico ──
+    // Sem sawtooth: triangle + sine evitam clangor metálico.
+    // Pesos calibrados para headroom adequado em acordes de 6 notas.
+    const harmonics = isGuitar
+        ? [[1, 0.60], [2, 0.25], [3, 0.10], [4, 0.04], [5, 0.01]]
+        : [[1, 0.55], [2, 0.22], [3, 0.07], [4, 0.02]];
+
+    // Piano: triangle para fundamental e sine para harmônicos superiores
+    const getOscType = (h) => (h === 1 && !isGuitar) ? 'triangle' : 'sine';
+    // Violão: triangle para fundamental (quente), sine nos superiores
+    const getGuitarOscType = (h) => (h === 1) ? 'triangle' : 'sine';
+
+    const decayMult = isGuitar ? 1.0 : 1.6;
+
+    // Scaling anti-clipping: normaliza para headroom seguro em acorde de 6v
+    const totalAmp   = harmonics.reduce((s, [, a]) => s + a, 0);
+    const voiceScale = 0.55 / Math.max(1, totalAmp); // 0.55 → headroom -3dB
+
+    // SubmixGain: nó por nota, encaminha ao master e ao shimmer (se ativo)
+    const submix = ctx.createGain();
+    submix.gain.value = 1.0;
+    submix.connect(masterGain);
+
+    // Injeção no Shimmer Bus: apenas quando sustainMode ativo
+    if (state.sustainMode && shimmerReady && shimmerGain) {
+        const shimmerSend = ctx.createGain();
+        shimmerSend.gain.value = 0.40; // nível de envio para o reverb
+        submix.connect(shimmerSend);
+        shimmerSend.connect(shimmerGain);
+        // Limpeza automática após a nota terminar
+        setTimeout(() => {
+            try { shimmerSend.disconnect(); } catch (_) {}
+        }, (duration * decayMult + 0.5) * 1000);
+    }
+
+    const d = duration * decayMult;
+
+    // ── Construção de cada harmônico com filtro LP dinâmico (violão) ─
+    harmonics.forEach(([h, amp]) => {
+        const osc = ctx.createOscillator();
+        const gn  = ctx.createGain();
+
+        osc.type            = isGuitar ? getGuitarOscType(h) : getOscType(h);
+        osc.frequency.value = freq * h;
+
+        const targetAmp  = amp * voiceScale;
+        const attackTime = isGuitar ? 0.008 : 0.020; // dedilhado mais rápido
+
+        // Envelope de ganho (ADSR)
+        gn.gain.setValueAtTime(0.0001, now);
+        gn.gain.linearRampToValueAtTime(targetAmp, now + attackTime);
+        gn.gain.exponentialRampToValueAtTime(0.0001, now + d);
+
+        if (isGuitar) {
+            // ── Filtro Lowpass Dinâmico (Damping de Corda) ────────────
+            // Simula: ataque brilhante → amortecimento gradual das cordas
+            const lpf = ctx.createBiquadFilter();
+            lpf.type  = 'lowpass';
+            lpf.Q.value = 1.2;
+            // Cutoff: começa em 3500 Hz (brilhante no pluck)
+            lpf.frequency.setValueAtTime(3500, now);
+            // Decai para 650 Hz ao longo do decay (corpo da nota aveludado)
+            lpf.frequency.exponentialRampToValueAtTime(650, now + d);
+
+            osc.connect(gn);
+            gn.connect(lpf);
+            lpf.connect(submix);
+            osc.onended = () => { osc.disconnect(); gn.disconnect(); lpf.disconnect(); };
+        } else {
+            osc.connect(gn);
+            gn.connect(submix);
+            osc.onended = () => { osc.disconnect(); gn.disconnect(); };
+        }
+
+        osc.start(now);
+        osc.stop(now + d + 0.05);
+    });
+
+    // Pluck Transient (violão): mini-oscilador de ataque — "estalo" do dedilhado
+    if (isGuitar) {
+        const pluck = ctx.createOscillator();
+        const pluckGain = ctx.createGain();
+        const pluckLpf = ctx.createBiquadFilter();
+        pluck.type = 'sawtooth'; // só no transiente curto, filtrado
+        pluck.frequency.value = freq * 1.5;
+        pluckLpf.type = 'lowpass';
+        pluckLpf.frequency.value = 2000;
+        pluckGain.gain.setValueAtTime(voiceScale * 0.18, now);
+        pluckGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045); // 45ms
+        pluck.connect(pluckGain);
+        pluckGain.connect(pluckLpf);
+        pluckLpf.connect(submix);
+        pluck.start(now);
+        pluck.stop(now + 0.06);
+        pluck.onended = () => {
+            try { pluck.disconnect(); pluckGain.disconnect(); pluckLpf.disconnect(); } catch (_) {}
+        };
+    }
+
+    return submix;
+}
+
+/**
+ * Arpegia notas MIDI com agendamento preciso pelo AudioContext.currentTime.
+ */
+function playArpeggio(midiNotes, delay = 0.10, duration = 1.8, startAt = null) {
+    const ctx    = getAudioContext();
+    const origin = startAt !== null ? startAt : ctx.currentTime;
     midiNotes.forEach((note, i) => {
-        setTimeout(() => playNote(note, duration), i * delay * 1000);
+        playNote(note, duration, false, origin + i * delay);
     });
 }
 
@@ -274,18 +482,24 @@ function getChordOffsetsForInterval(interval) {
 }
 
 function playChordFromNode(node) {
+    // Tonica padrão: se nenhuma tonica foi definida ainda, usa 'C'
+    if (!state.isRootSet) {
+        state.root = 'C';
+        state.isRootSet = true;
+        const inp = document.getElementById('chord-input');
+        if (inp) inp.value = 'C';
+    }
     const rs = getRootSemitone();
     const baseMidi = 48 + rs + node.interval + (rs + node.interval > 55 ? -12 : 0);
-    
-    const offsets = getChordOffsetsForInterval(node.interval);
-    offsets.forEach(off => {
-        const m = baseMidi + off;
-        playNote(m);
-    });
-    if (state.sustainMode) {
-        playNote(baseMidi - 12, 10, true); 
-    }
-    
+
+    // Toca o arpejo das notas do grau clicado
+    const offsets   = getChordOffsetsForInterval(node.interval);
+    const midiNotes = offsets.map(off => baseMidi + off).sort((a, b) => a - b);
+    playArpeggio(midiNotes, 0.04, 1.8);
+
+    // Shimmer Bus: o roteamento acontece dentro de playNote via state.sustainMode.
+    // Nada adicional a fazer aqui — a cauda shimmer é alimentada nota a nota.
+
     const chordStr = getChordNameForInterval(node.interval);
     renderChordCardsForNode(node.interval, chordStr || state.root);
 }
@@ -332,21 +546,22 @@ function renderWheel() {
         });
 
         el.addEventListener('click', () => {
-            if (state.isRootSet) {
-                // Clear previous sustain highlight
-                wrapper.querySelectorAll('.wheel-node.sustain-active').forEach(n => {
-                    n.classList.remove('sustain-active');
-                    n.style.backgroundColor = '#111';
-                    n.style.boxShadow = '';
-                });
-                playChordFromNode(node);
-                if (state.sustainMode) {
-                    el.classList.add('sustain-active');
-                    // Set CSS custom property for the glass color
-                    el.style.setProperty('--sustain-color', node.color);
-                }
-            } else {
-                document.getElementById('chord-input').focus();
+            // Permite clicar mesmo sem tônica definida (define C como padrão)
+            if (!state.isRootSet) {
+                state.root = 'C';
+                state.isRootSet = true;
+                const inp = document.getElementById('chord-input');
+                if (inp) inp.value = 'C';
+            }
+            wrapper.querySelectorAll('.wheel-node.sustain-active').forEach(n => {
+                n.classList.remove('sustain-active');
+                n.style.backgroundColor = '#111';
+                n.style.boxShadow = '';
+            });
+            playChordFromNode(node);
+            if (state.sustainMode) {
+                el.classList.add('sustain-active');
+                el.style.setProperty('--sustain-color', node.color);
             }
         });
 
@@ -591,10 +806,21 @@ function _renderCards(rootStr, suffix, nodeInterval) {
     });
 }
 
-// Global switch handler called from tab button onclick
+// Switch de qualidade: re-renderiza tabs + cards E toca o acorde da nova qualidade
 window._switchQuality = function(rootStr, suffix, nodeInterval) {
     _renderQualityTabs(rootStr, suffix, nodeInterval);
     _renderCards(rootStr, suffix, nodeInterval);
+
+    // Toca o acorde correspondente à nova qualidade imediatamente
+    const fullChord = rootStr + suffix;
+    const parsed = parseFullChord(fullChord);
+    if (parsed) {
+        const baseMidi = 48 + parsed.root;
+        const midiNotes = parsed.intervals
+            .map(off => baseMidi + off)
+            .sort((a, b) => a - b);
+        playArpeggio(midiNotes, 0.07, 1.6);
+    }
 };
 
 
@@ -603,15 +829,14 @@ window._switchQuality = function(rootStr, suffix, nodeInterval) {
 
 
 function updateChordSuggestions() {
-    const container = document.getElementById('chord-suggestions');
+    const container  = document.getElementById('chord-suggestions');
     container.innerHTML = '';
-    // Always show a useful set of quick-access qualities
-    const bases = ['', 'm', 'dim', 'aug', 'sus4', '7', 'maj7', 'm7'];
+    const bases      = ['', 'm', 'dim', 'aug', 'sus4', '7', 'maj7', 'm7'];
     const chordInput = document.getElementById('chord-input');
-    
+
     let match = chordInput.value.trim().match(/^([A-G][#b]?)/i);
     let r = match ? match[1].charAt(0).toUpperCase() + match[1].slice(1) : 'C';
-    
+
     bases.forEach(q => {
         const btn = document.createElement('button');
         btn.className = 'glass-btn small-btn';
@@ -620,6 +845,15 @@ function updateChordSuggestions() {
         btn.onclick = () => {
             chordInput.value = btn.textContent;
             parseChordParams();
+            // Toca o acorde ao clicar na sugestão
+            const parsed = parseFullChord(btn.textContent);
+            if (parsed) {
+                const baseMidi   = 48 + parsed.root;
+                const midiNotes  = parsed.intervals
+                    .map(off => baseMidi + off)
+                    .sort((a, b) => a - b);
+                playArpeggio(midiNotes, 0.07, 1.6);
+            }
         };
         container.appendChild(btn);
     });
@@ -777,21 +1011,37 @@ function setupUI() {
     btnToggleSustain.onclick = () => {
         state.sustainMode = !state.sustainMode;
         btnToggleSustain.classList.toggle('active', state.sustainMode);
-        btnToggleSustain.textContent = state.sustainMode ? 'On' : 'Off';
-        if (!state.sustainMode && sustainGainNode) {
-            sustainGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-            sustainGainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+        btnToggleSustain.setAttribute('aria-pressed', state.sustainMode);
+        btnToggleSustain.textContent = state.sustainMode ? '✦ On' : 'Off';
+
+        // Aciona fade-in ou fade-out suave do Shimmer Bus
+        setShimmerActive(state.sustainMode);
+
+        // Feedback visual: brilho glassmorphic no botão quando ativo
+        if (state.sustainMode) {
+            btnToggleSustain.style.boxShadow = '0 0 18px rgba(91,80,214,0.7), inset 0 0 10px rgba(91,80,214,0.25)';
+            btnToggleSustain.style.borderColor = 'rgba(91,80,214,0.8)';
+        } else {
+            btnToggleSustain.style.boxShadow = '';
+            btnToggleSustain.style.borderColor = '';
         }
     };
 
-    // Timbre toggle (Violão / Piano)
-    document.querySelectorAll('.instrument-btn[data-timbre]').forEach(btn => {
+    // Timbre toggle (Violão / Piano) — seletor correto: .hm-toggle-btn[data-timbre]
+    document.querySelectorAll('.hm-toggle-btn[data-timbre]').forEach(btn => {
         btn.onclick = () => {
-            document.querySelectorAll('.instrument-btn[data-timbre]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.hm-toggle-btn[data-timbre]').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-checked', 'false');
+            });
             btn.classList.add('active');
+            btn.setAttribute('aria-checked', 'true');
             state.timbre = btn.dataset.timbre;
         };
     });
+
+    // Libera o AudioContext num gesto de usuário antecipado (qualquer clique)
+    document.addEventListener('click', () => getAudioContext(), { once: true });
 }
 
 
