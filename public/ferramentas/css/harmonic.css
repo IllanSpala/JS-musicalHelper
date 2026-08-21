@@ -1,24 +1,28 @@
 /* ============================================================
- * harmonic.css — Mapa de Intervalos | JS-musicalHelper
+ * harmonic.css — Mapa de Intervalos | JoJoTools
  * Design System: Dark Glassmorphic Premium
  * ============================================================ */
 
-/* ── Variáveis de Design (Tokens) ─────────────────────────── */
 :root {
-    --hm-primary:       #5b50d6;
-    --hm-primary-glow:  rgba(91, 80, 214, 0.45);
-    --hm-panel-bg:      rgba(255, 255, 255, 0.03);
-    --hm-panel-border:  rgba(255, 255, 255, 0.07);
-    --hm-surface:       rgba(255, 255, 255, 0.05);
+    --hm-primary: #5b50d6;
+    --hm-primary-glow: rgba(91, 80, 214, 0.45);
+    --hm-panel-bg: rgba(255, 255, 255, 0.03);
+    --hm-panel-border: rgba(255, 255, 255, 0.07);
+    --hm-surface: rgba(255, 255, 255, 0.05);
     --hm-surface-hover: rgba(255, 255, 255, 0.09);
-    --hm-text-muted:    rgba(255, 255, 255, 0.45);
-    --hm-radius-card:   14px;
-    --hm-radius-pill:   50px;
-    --hm-transition:    0.25s ease;
+    --hm-text-muted: rgba(255, 255, 255, 0.45);
+    --hm-radius-card: 14px;
+    --hm-radius-pill: 50px;
+    --hm-transition: 0.25s ease;
 }
 
-/* ── Layout Principal (Main) ─────────────────────────────── */
-/* Override menu.css main para o Mapa de Intervalos */
+body.hm-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
 body.hm-page main {
     flex: 1;
     display: flex;
@@ -29,18 +33,15 @@ body.hm-page main {
     box-sizing: border-box;
 }
 
-/* Wrapper externo — o "stage" que segura os 3 painéis */
 .hm-stage {
     display: grid;
     grid-template-columns: 1fr 1.55fr 1fr;
-    gap: 16px;
+    gap: clamp(10px, 1.2vw, 22px);
     width: 100%;
-    max-width: 1680px;
-    height: calc(100vh - 100px); /* Deixa espaço pro header */
-    max-height: 900px;
+    max-width: clamp(1100px, 88vw, 2000px);
+    height: clamp(500px, calc(100vh - 110px), 1080px);
 }
 
-/* ── Painel Base (Esquerda & Direita) ────────────────────── */
 .hm-panel {
     background: var(--hm-panel-bg);
     border: 1px solid var(--hm-panel-border);
@@ -55,7 +56,7 @@ body.hm-page main {
 }
 
 .hm-panel__title {
-    font-size: 1.05rem;
+    font-size: clamp(0.9rem, 1.05vw, 1.2rem);
     font-weight: 700;
     color: #fff;
     letter-spacing: 0.5px;
@@ -72,17 +73,18 @@ body.hm-page main {
     flex-shrink: 0;
 }
 
-/* ── Painel Central ──────────────────────────────────────── */
 .hm-center {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
+    justify-content: center;
+    gap: clamp(12px, 1.8vh, 24px);
+    padding: clamp(16px, 2vh, 28px) clamp(16px, 2vw, 32px);
     position: relative;
+    height: 100%;
+    margin: 0 auto;
 }
 
-/* Título "Mapa de Intervalos" com gradiente animado */
 .hm-main-title {
     font-size: clamp(1.6rem, 2.5vw, 2.4rem);
     font-weight: 900;
@@ -98,11 +100,15 @@ body.hm-page main {
 }
 
 @keyframes hm-title-glow {
-    from { filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4)); }
-    to   { filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6)); }
+    from {
+        filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4));
+    }
+
+    to {
+        filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6));
+    }
 }
 
-/* ── Barra de Controles ──────────────────────────────────── */
 .hm-controls-bar {
     display: flex;
     align-items: center;
@@ -128,7 +134,36 @@ body.hm-page main {
     color: var(--hm-text-muted);
 }
 
-/* Toggle de instrumento / sustain */
+/* FALHA 2: Estilo do select de afinação */
+.hm-tuning-select {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--hm-panel-border);
+    border-radius: 8px;
+    color: #ccc;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+    transition: var(--hm-transition);
+    max-width: 180px;
+}
+
+.hm-tuning-select:hover,
+.hm-tuning-select:focus {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    background: rgba(91, 80, 214, 0.12);
+    box-shadow: 0 0 0 2px var(--hm-primary-glow);
+}
+
+.hm-tuning-select option,
+.hm-tuning-select optgroup {
+    background: #1a1a2e;
+    color: #ddd;
+}
+
 .hm-toggle-group {
     display: flex;
     background: rgba(0, 0, 0, 0.3);
@@ -164,7 +199,6 @@ body.hm-page main {
     box-shadow: 0 2px 12px var(--hm-primary-glow);
 }
 
-/* Botão ícone (dado aleatório) */
 .hm-icon-btn {
     width: 34px;
     height: 34px;
@@ -188,7 +222,6 @@ body.hm-page main {
     transform: rotate(15deg) scale(1.05);
 }
 
-/* ── Guia Emocional ─────────────────────────────────────── */
 .hm-wheel-guide {
     text-align: center;
     min-height: 68px;
@@ -213,12 +246,15 @@ body.hm-page main {
     box-shadow: 0 0 20px rgba(91, 80, 214, 0.12);
 }
 
-/* ── Roda Harmônica ─────────────────────────────────────── */
 .hm-wheel-wrapper {
     position: relative;
-    width: 320px;
-    height: 320px;
+    width: clamp(390px, 42vmin, 630px);
+    height: clamp(390px, 42vmin, 630px);
     flex-shrink: 0;
+    margin: auto auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #harmonic-svg-lines {
@@ -232,13 +268,60 @@ body.hm-page main {
     overflow: visible;
 }
 
-/* Nós da roda */
+.hm-wheel-dropzone {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    border-radius: 50%;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed transparent;
+    transition: all var(--hm-transition);
+    opacity: 0;
+}
+
+.hm-wheel-wrapper:hover .hm-wheel-dropzone,
+.hm-wheel-wrapper:focus-within .hm-wheel-dropzone {
+    pointer-events: auto;
+}
+
+.hm-wheel-dropzone span {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+}
+
+.hm-wheel-dropzone.drag-over {
+    opacity: 1;
+    border-color: var(--hm-primary);
+    background: rgba(91, 80, 214, 0.1);
+    box-shadow: 0 0 30px rgba(91, 80, 214, 0.2) inset;
+}
+
+.hm-chord-input-wrap.dragging {
+    opacity: 0.5;
+    border-color: var(--hm-primary);
+    transform: scale(0.95);
+}
+
 .wheel-node {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    margin-top: -25px;
-    margin-left: -25px;
+    width: clamp(60px, 6.3vmin, 96px);
+    height: clamp(60px, 6.3vmin, 96px);
+    /* transform-origin no centro próprio do elemento — sem margin hacks */
+    transform: translate(-50%, -50%);
     border-radius: 50%;
     display: flex;
     flex-direction: column;
@@ -254,7 +337,8 @@ body.hm-page main {
 }
 
 .wheel-node:hover {
-    transform: scale(1.18) !important;
+    /* Preserva o translate(-50%,-50%) base ao aplicar o scale de hover */
+    transform: translate(-50%, -50%) scale(1.18) !important;
     z-index: 10;
 }
 
@@ -272,27 +356,31 @@ body.hm-page main {
 }
 
 @keyframes hm-sustain-pulse {
-    0%, 100% { box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255,255,255,0.08); }
-    50%       { box-shadow: 0 0 32px var(--sustain-color, currentColor), inset 0 0 22px rgba(255,255,255,0.16); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255, 255, 255, 0.08);
+    }
+
+    50% {
+        box-shadow: 0 0 32px var(--sustain-color, currentColor), inset 0 0 22px rgba(255, 255, 255, 0.16);
+    }
 }
 
 .wheel-node-degree {
-    font-size: 13px;
+    font-size: clamp(15px, 1.65vmin, 24px);
     font-weight: 800;
     line-height: 1;
     margin-bottom: 2px;
 }
 
 .wheel-node-note {
-    font-size: 9px;
+    font-size: clamp(10px, 1.2vmin, 16px);
     font-weight: 600;
     opacity: 0.75;
     line-height: 1;
 }
 
-/* ── Painel Esquerdo: Input + CAGED ─────────────────────── */
-
-/* Input de busca de cifra */
 .hm-chord-input-wrap {
     position: relative;
     flex-shrink: 0;
@@ -322,6 +410,7 @@ body.hm-page main {
     transition: var(--hm-transition);
     box-sizing: border-box;
     text-align: center;
+    text-transform: uppercase;
 }
 
 .glass-input:focus {
@@ -334,9 +423,9 @@ body.hm-page main {
     font-size: 0.82rem;
     color: var(--hm-text-muted);
     font-weight: 400;
+    text-transform: none;
 }
 
-/* Badges de sugestão de qualidades */
 .hm-chord-suggestions {
     display: flex;
     flex-wrap: wrap;
@@ -353,7 +442,6 @@ body.hm-page main {
     padding: 0 2px;
 }
 
-/* Pills de qualidade (geradas dinamicamente no JS) */
 .hm-quality-pill {
     padding: 3px 9px;
     font-size: 0.72rem;
@@ -380,7 +468,6 @@ body.hm-page main {
     box-shadow: 0 1px 8px var(--hm-primary-glow);
 }
 
-/* Títulos de seção internos */
 .hm-section-label {
     font-size: 0.7rem;
     font-weight: 700;
@@ -391,7 +478,6 @@ body.hm-page main {
     flex-shrink: 0;
 }
 
-/* Container de cards CAGED (scroll) */
 .hm-cards-scroll {
     flex: 1;
     overflow-y: auto;
@@ -403,14 +489,19 @@ body.hm-page main {
     padding-bottom: 4px;
 }
 
-.hm-cards-scroll::-webkit-scrollbar { width: 4px; }
-.hm-cards-scroll::-webkit-scrollbar-track { background: transparent; }
+.hm-cards-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.hm-cards-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .hm-cards-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
 }
 
-/* Card CAGED individual */
 .chord-diagram-card {
     background: rgba(15, 15, 15, 0.5);
     border-radius: 10px;
@@ -441,7 +532,9 @@ body.hm-page main {
     transform: translateY(-2px);
 }
 
-.chord-diagram-card:active { cursor: grabbing; }
+.chord-diagram-card:active {
+    cursor: grabbing;
+}
 
 .chord-diagram-card h4 {
     margin: 0 0 8px;
@@ -450,9 +543,10 @@ body.hm-page main {
     text-align: center;
 }
 
-.chord-svg { background: transparent; }
+.chord-svg {
+    background: transparent;
+}
 
-/* Estado vazio dos painéis */
 .hm-empty-state {
     text-align: center;
     color: var(--hm-text-muted);
@@ -460,8 +554,6 @@ body.hm-page main {
     padding: 24px 12px;
     line-height: 1.6;
 }
-
-/* ── Painel Direito: Progressão ──────────────────────────── */
 
 .hm-dropzone {
     flex: 1;
@@ -477,8 +569,14 @@ body.hm-page main {
     transition: border-color var(--hm-transition), background var(--hm-transition);
 }
 
-.hm-dropzone::-webkit-scrollbar { width: 4px; }
-.hm-dropzone::-webkit-scrollbar-track { background: transparent; }
+.hm-dropzone::-webkit-scrollbar {
+    width: 4px;
+}
+
+.hm-dropzone::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .hm-dropzone::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
@@ -490,7 +588,6 @@ body.hm-page main {
     box-shadow: inset 0 0 20px rgba(91, 80, 214, 0.1);
 }
 
-/* Card de acorde na progressão */
 .hm-prog-card {
     background: var(--hm-surface);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -505,7 +602,9 @@ body.hm-page main {
     flex-shrink: 0;
 }
 
-.hm-prog-card:hover { background: var(--hm-surface-hover); }
+.hm-prog-card:hover {
+    background: var(--hm-surface-hover);
+}
 
 .hm-prog-card__chord {
     flex: 1;
@@ -545,9 +644,10 @@ body.hm-page main {
     padding: 2px 4px;
 }
 
-.hm-prog-card__remove:hover { color: #ff5555; }
+.hm-prog-card__remove:hover {
+    color: #ff5555;
+}
 
-/* Mapa Emocional (narrativa) */
 .hm-prog-summary {
     padding: 12px 14px;
     border-radius: 8px;
@@ -560,7 +660,6 @@ body.hm-page main {
     display: none;
 }
 
-/* Botões de ação */
 .hm-action-row {
     display: flex;
     gap: 8px;
@@ -575,12 +674,18 @@ body.hm-page main {
     align-items: center;
     justify-content: center;
     gap: 6px;
+    text-transform: uppercase;
+    font-weight: 700;
 }
 
-.hm-action-row .glass-btn.btn-danger { color: #ff6666; }
-.hm-action-row .glass-btn.btn-accent { color: #7fddff; }
+.hm-action-row .glass-btn.btn-danger {
+    color: #ff6666;
+}
 
-/* ── Modal de Informações ────────────────────────────────── */
+.hm-action-row .glass-btn.btn-accent {
+    color: #7fddff;
+}
+
 .chord-modal {
     position: fixed;
     inset: 0;
@@ -634,7 +739,6 @@ body.hm-page main {
     line-height: 1.6;
 }
 
-/* ── Responsividade ─────────────────────────────────────── */
 @media (max-width: 1100px) {
     .hm-stage {
         grid-template-columns: 1fr 1.4fr 1fr;
@@ -647,16 +751,70 @@ body.hm-page main {
         overflow-y: auto;
         align-items: flex-start;
     }
+
     .hm-stage {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
         height: auto;
         max-height: none;
     }
-    .hm-center { order: -1; }
+
+    .hm-center {
+        order: -1;
+    }
 }
 
-/* ── Fretboard helpers (mantidos) ────────────────────────── */
+@media (min-width: 1920px) {
+    .hm-stage {
+        max-width: clamp(1600px, 86vw, 2400px);
+        height: clamp(600px, calc(100vh - 120px), 1200px);
+        gap: clamp(18px, 2vw, 32px);
+    }
+
+    .hm-panel {
+        padding: clamp(20px, 2vh, 36px) clamp(16px, 1.6vw, 28px);
+        gap: clamp(14px, 1.5vh, 24px);
+    }
+
+    .hm-panel__title {
+        font-size: clamp(1.1rem, 1.2vw, 1.5rem);
+    }
+
+    .hm-main-title {
+        font-size: clamp(2rem, 2.8vw, 3.2rem);
+    }
+
+    .hm-wheel-wrapper {
+        width: clamp(570px, 51vmin, 840px) !important;
+        height: clamp(570px, 51vmin, 840px) !important;
+    }
+
+    .wheel-node {
+        width: clamp(81px, 7.8vmin, 123px) !important;
+        height: clamp(81px, 7.8vmin, 123px) !important;
+        transform: translate(-50%, -50%) !important;
+        margin-top: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    .wheel-node-degree {
+        font-size: clamp(19px, 2.1vmin, 30px) !important;
+    }
+
+    .wheel-node-note {
+        font-size: clamp(13px, 1.5vmin, 19px) !important;
+    }
+
+    .hm-wheel-guide {
+        font-size: clamp(0.9rem, 1vw, 1.1rem);
+        max-width: clamp(440px, 36vw, 600px);
+    }
+
+    .hm-controls-bar {
+        gap: clamp(20px, 2.5vw, 40px);
+    }
+}
+
 .fretboard-fade .fret-cell .note-dot:not(.active-chord-note) {
     opacity: 0.1;
     filter: blur(1px);
@@ -669,10 +827,151 @@ body.hm-page main {
     border: 2px solid #fff;
 }
 
-/* ── Scrollbar global customizada ────────────────────────── */
-.custom-scroll::-webkit-scrollbar { width: 5px; }
-.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
 .custom-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.chord-hover-tooltip {
+    position: fixed;
+    z-index: 999999;
+    pointer-events: auto;
+    background: rgba(18, 18, 28, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    padding: 14px;
+    color: #fff;
+    width: 270px;
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.chord-hover-tooltip.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.chord-hover-tooltip h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    color: var(--hm-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.chord-hover-tooltip .tooltip-section {
+    margin-bottom: 12px;
+}
+
+.chord-hover-tooltip .tooltip-label {
+    font-size: 0.75rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.chord-hover-tooltip .tooltip-notes {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chord-hover-tooltip .tooltip-note-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chord-hover-tooltip .tooltip-suggestions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.chord-hover-tooltip .tooltip-suggestion-badge {
+    background: rgba(91, 80, 214, 0.25);
+    border: 1px solid rgba(91, 80, 214, 0.6);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e0e0ff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.chord-hover-tooltip .tooltip-suggestion-badge:hover {
+    background: rgba(91, 80, 214, 0.75);
+    color: #ffffff;
+    border-color: #7c6ff7;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 0 12px rgba(124, 111, 247, 0.5);
+}
+
+/* ─── Theory Box ──────────────────────────────────────────────────────────── */
+.hm-theory-box {
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 2px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    animation: hm-theory-fadein 0.22s ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+@keyframes hm-theory-fadein {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hm-theory-formula {
+    display: inline-block;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--hm-primary, #5b50d6);
+    background: rgba(91, 80, 214, 0.12);
+    border: 1px solid rgba(91, 80, 214, 0.25);
+    border-radius: 6px;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    align-self: flex-start;
+}
+
+.hm-theory-desc {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.55);
 }

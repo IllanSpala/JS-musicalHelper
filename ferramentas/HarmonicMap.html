@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mapeie intervalos, acordes e progressões harmônicas. Explore a lógica dos graus tonais com o Mapa de Intervalos. JS-musicalHelper.">
-    <title>Mapa de Intervalos — JS-musicalHelper</title>
+    <meta name="description" content="Mapeie intervalos, acordes e progressões harmônicas. Explore a lógica dos graus tonais com o Mapa de Intervalos. JoJoTools.">
+    <title>Mapa de Intervalos — JoJoTools</title>
 
     <!-- Fontes e Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -28,16 +28,16 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="js/script.js" defer></script>
     <script src="js/firebase.js"></script>
+    <script src="js/jj-store.js"></script>
     <script src="js/harmonic.js" defer></script>
 </head>
 
-<!-- hm-page ativa os estilos de layout específicos do menu.css override -->
 <body class="scale-page fretboard-fade hm-page">
 
-    <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+    <!-- HEADER -->
     <header class="glass-header">
-        <a href="../index.html" class="logo" aria-label="Voltar à página inicial do JS-musicalHelper">
-            JS-musicalHelper
+        <a href="../index.html" class="logo" aria-label="Voltar à página inicial do JoJoTools">
+            JoJoTools
         </a>
 
         <nav class="center-links" aria-label="Ferramentas">
@@ -48,28 +48,22 @@
         </nav>
 
         <nav style="display:flex; align-items:center; gap:14px;" aria-label="Conta e redes sociais">
-            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer"
-                aria-label="GitHub IllanSpala"
-                style="color:white; text-decoration:none; font-size:1.2rem;">
+            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer" aria-label="GitHub IllanSpala" style="color:white; text-decoration:none; font-size:1.2rem;">
                 <i class="fab fa-github" aria-hidden="true"></i>
             </a>
 
             <!-- Auth UI -->
-            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn"
-                style="font-size:0.8rem; padding:7px 16px;">
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:0.8rem; padding:7px 16px;">
                 <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login
             </a>
-            <div id="auth-user-chip" class="auth-chip tp-hidden"
-                onclick="window.location.href='profile.html'"
-                title="Perfil do usuário"
-                style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" title="Perfil do usuário" style="cursor:pointer; display:flex; align-items:center; gap:6px;">
                 <img id="auth-avatar" src="" alt="Avatar do usuário" class="chip-avatar">
                 <span id="auth-username" class="chip-name"></span>
             </div>
         </nav>
     </header>
 
-    <!-- ═══════════════════════════ MODAL DE INFO ══════════════════════════ -->
+    <!-- MODAL DE INFO -->
     <div id="info-modal" class="chord-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="chord-modal__backdrop" id="modal-backdrop"></div>
         <div class="chord-modal__box">
@@ -81,57 +75,38 @@
             <p><strong>Lado Esquerdo (Graus Bemóis e 4):</strong> Energias de contração, sombrias, tensas e trágicas.</p>
             <p><strong>Eixo Vertical (1 e #4):</strong> O repouso absoluto vs. a tensão alienígena máxima.</p>
             <p style="font-size:0.82rem; color:#888; border-top:1px solid rgba(255,255,255,0.07); padding-top:12px; margin-top:0;">
-                Desenvolvido por <a href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer"
-                    style="color:#5b50d6; text-decoration:none;">IllanSpala</a> · JS-musicalHelper
+                Desenvolvido por <a href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer" style="color:#5b50d6; text-decoration:none;">IllanSpala</a> · JoJoTools
             </p>
             <button id="btn-close-info" class="glass-btn small-btn" style="align-self:flex-end;">Entendi</button>
         </div>
     </div>
 
-    <!-- ═══════════════════════════ MAIN ═══════════════════════════════ -->
+    <!-- MAIN -->
     <main>
-        <!-- Stage: 3 colunas -->
         <div class="hm-stage">
 
-            <!-- ── PAINEL ESQUERDO: Acordes & CAGED ───────────────────── -->
+            <!-- PAINEL ESQUERDO -->
             <aside class="hm-panel" aria-label="Painel de acordes CAGED">
-
                 <h2 class="hm-panel__title">Painel do Acorde</h2>
 
-                <!-- Input de busca da cifra -->
-                <div class="hm-chord-input-wrap">
-                    <i class="fas fa-music hm-input-icon" aria-hidden="true"></i>
-                    <input
-                        type="text"
-                        id="chord-input"
-                        placeholder="Ex: C, Dm7, G#maj7"
-                        value=""
-                        class="glass-input"
-                        autocomplete="off"
-                        spellcheck="false"
-                        aria-label="Digite a cifra do acorde"
-                    >
+                <div class="hm-chord-input-wrap" id="chord-drag-source" title="Digite a cifra ou arraste o ícone para o centro">
+                    <i class="fas fa-music hm-input-icon" id="chord-drag-handle" draggable="true" aria-hidden="true" style="cursor: grab;" title="Arraste este ícone para o centro do mapa"></i>
+                    <input type="text" id="chord-input" placeholder="Ex: C, Dm7, G#maj7" value="" class="glass-input" autocomplete="off" spellcheck="false" aria-label="Digite a cifra do acorde">
                 </div>
 
-                <!-- Sugestões rápidas (gerado pelo JS) -->
                 <div id="chord-suggestions" class="hm-chord-suggestions" role="group" aria-label="Qualidades rápidas"></div>
 
-                <!-- Label Shapes CAGED -->
                 <p class="hm-section-label">Shapes (CAGED)</p>
 
-                <!-- Container de cards scrollável -->
                 <div id="chord-cards-container" class="hm-cards-scroll" role="list">
                     <div class="hm-empty-state">
                         Clique num grau na roda central para gerar seus shapes arrastáveis.
                     </div>
                 </div>
-
             </aside>
 
-            <!-- ── PAINEL CENTRAL: Roda de Gravidade ─────────────────── -->
-            <section class="hm-panel hm-center" aria-label="Roda do Mapa de Intervalos">
-
-                <!-- Título -->
+            <!-- PAINEL CENTRAL (hm-panel removido) -->
+            <section class="hm-center" aria-label="Roda do Mapa de Intervalos">
                 <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
                     <h1 class="hm-main-title">Mapa de Intervalos</h1>
                     <button id="btn-info" class="hm-icon-btn" title="Como funciona?" aria-label="Informações sobre o Mapa de Intervalos">
@@ -139,10 +114,7 @@
                     </button>
                 </div>
 
-                <!-- Controles -->
                 <div class="hm-controls-bar" role="group" aria-label="Controles de reprodução">
-
-                    <!-- Sustain Mode -->
                     <div class="hm-control-group">
                         <label for="toggle-sustain-btn">Sustain Mode</label>
                         <div class="hm-toggle-group">
@@ -150,7 +122,6 @@
                         </div>
                     </div>
 
-                    <!-- Timbre -->
                     <div class="hm-control-group">
                         <label>Timbre</label>
                         <div class="hm-toggle-group" role="radiogroup" aria-label="Selecionar timbre">
@@ -163,49 +134,38 @@
                         </div>
                     </div>
 
-                    <!-- Tônica Aleatória -->
                     <div class="hm-control-group">
                         <label>Aleatório</label>
                         <button id="btn-random-root" class="hm-icon-btn" title="Tônica Aleatória" aria-label="Escolher tônica aleatória">
                             <i class="fas fa-dice" aria-hidden="true"></i>
                         </button>
                     </div>
-
                 </div>
 
-                <!-- Guia Emocional -->
                 <div id="wheel-guide" class="hm-wheel-guide" role="status" aria-live="polite">
                     <strong style="color:white; font-size:1rem;">Comece a explorar:</strong><br>
                     Escolha ou clique em uma tônica!
                 </div>
 
-                <!-- Roda Harmônica -->
                 <div id="harmonic-wheel" class="hm-wheel-wrapper" role="group" aria-label="Roda dos intervalos harmônicos">
                     <svg id="harmonic-svg-lines" aria-hidden="true"></svg>
+                    <div id="wheel-dropzone" class="hm-wheel-dropzone" aria-label="Solte o acorde aqui">
+                        <span>Solte a tônica aqui</span>
+                    </div>
                 </div>
-
             </section>
 
-            <!-- ── PAINEL DIREITO: Progressão ─────────────────────────── -->
+            <!-- PAINEL DIREITO -->
             <aside class="hm-panel" aria-label="Sua progressão de acordes">
-
                 <h2 class="hm-panel__title">Sua Progressão</h2>
                 <p class="hm-panel__subtitle">Arraste os shapes para cá</p>
 
-                <!-- Dropzone -->
-                <div
-                    id="progression-dropzone"
-                    class="hm-dropzone"
-                    role="region"
-                    aria-label="Área de montagem da progressão"
-                    aria-dropeffect="copy">
-                    <div class="hm-empty-state">Aguardando acordes…</div>
+                <div id="progression-dropzone" class="hm-dropzone" role="region" aria-label="Área de montagem da progressão" aria-dropeffect="copy">
+                    <div class="hm-empty-state">Aguardando acordes...</div>
                 </div>
 
-                <!-- Mapa Emocional (narrativa) -->
                 <div id="progression-summary" class="hm-prog-summary" aria-live="polite"></div>
 
-                <!-- Ações -->
                 <div class="hm-action-row" role="group" aria-label="Ações da progressão">
                     <button id="btn-play-progression" class="glass-btn" title="Tocar progressão">
                         <i class="fas fa-play" aria-hidden="true"></i> Tocar
@@ -217,11 +177,9 @@
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
-
             </aside>
 
-        </div><!-- /hm-stage -->
+        </div>
     </main>
-
 </body>
 </html>

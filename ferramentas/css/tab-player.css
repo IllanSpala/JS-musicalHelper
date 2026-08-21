@@ -51,7 +51,7 @@ body.tab-page .theme-sidebar {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 36px;
-    padding: 80px 120px;
+    padding: clamp(48px, 7vh, 100px) clamp(60px, 8vw, 140px);
     text-align: center;
     cursor: pointer;
     display: flex;
@@ -79,7 +79,7 @@ body.tab-page .theme-sidebar {
 }
 
 .upload-title {
-    font-size: 2.2rem;
+    font-size: clamp(1.5rem, 2.5vw, 2.8rem);
     font-weight: 700;
     letter-spacing: -1px;
     color: white;
@@ -88,7 +88,7 @@ body.tab-page .theme-sidebar {
 }
 
 .upload-sub {
-    font-size: 0.9rem;
+    font-size: clamp(0.78rem, 0.95vw, 1rem);
     font-weight: 500;
     letter-spacing: 0px;
     color: rgba(255, 255, 255, 0.6);
@@ -262,7 +262,7 @@ body.tab-page .theme-sidebar {
 }
 
 .count-num {
-    font-size: 9rem;
+    font-size: clamp(6rem, 14vmin, 12rem);
     font-weight: 900;
     color: var(--accent-b, #d6b89c);
     text-shadow: 0 0 60px var(--accent-b, #d6b89c), 0 0 20px rgba(255, 255, 255, 0.3);
@@ -319,15 +319,15 @@ body.tab-page .theme-sidebar {
 }
 
 .r1 {
-    height: 52px;
-    padding: 0 14px;
+    height: clamp(44px, 5.2vh, 62px);
+    padding: 0 clamp(10px, 1.2vw, 18px);
     gap: 0;
 }
 
 .r2 {
-    height: 42px;
-    padding: 0 14px;
-    gap: 10px;
+    height: clamp(36px, 4.2vh, 50px);
+    padding: 0 clamp(10px, 1.2vw, 18px);
+    gap: clamp(6px, 0.8vw, 14px);
 }
 
 .cg {
@@ -1247,4 +1247,19 @@ body.tab-page .theme-sidebar {
     min-height: 18px;
     display: block;
 }
-
+/* ── 2K / 4K (≥ 1920px) ──────────────────────────── */
+@media (min-width: 1920px) {
+    .upload-card {
+        padding: clamp(90px, 10vh, 140px) clamp(140px, 12vw, 220px);
+        gap: clamp(20px, 2.5vh, 32px);
+    }
+    .upload-title { font-size: clamp(2.6rem, 3.2vw, 4.2rem); }
+    .upload-sub   { font-size: clamp(0.9rem, 1.1vw, 1.2rem); }
+    .upload-icon  { font-size: clamp(3.5rem, 4.5vw, 6rem); }
+    .r1 { height: clamp(60px, 6vh, 80px); }
+    .r2 { height: clamp(48px, 5vh, 64px); }
+    .clbl { font-size: clamp(0.5rem, 0.55vw, 0.66rem); }
+    .bpm-val { font-size: clamp(0.9rem, 1vw, 1.15rem); }
+    .cb  { width: clamp(30px, 2.2vw, 42px); height: clamp(30px, 2.2vw, 42px); }
+    .cb-play { width: clamp(40px, 2.8vw, 54px) !important; height: clamp(40px, 2.8vw, 54px) !important; }
+}

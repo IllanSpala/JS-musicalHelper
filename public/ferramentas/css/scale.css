@@ -23,7 +23,7 @@ body.scale-page .container {
 }
 
 body.scale-page h1.glow-text {
-    font-size: 1.4rem;
+    font-size: clamp(1.1rem, 1.6vw, 1.8rem);
     margin: 0;
     text-align: center;
     line-height: 1;
@@ -53,14 +53,14 @@ select {
     border-radius: 8px;
     color: rgba(255,255,255,0.92);
     padding: 5px 24px 5px 10px;
-    font-size: 0.79rem;
+    font-size: clamp(0.72rem, 0.82vw, 0.88rem);
     font-family: inherit;
     cursor: pointer;
     appearance: none; -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
-    min-width: 86px;
+    min-width: clamp(76px, 8vw, 110px);
     transition: border-color 0.2s;
 }
 select option { background-color: #160d0d; color: #f0ebe5; }
@@ -204,20 +204,20 @@ body.dot-b-dark .legend-note.is-root .legend-degree    { color: rgba(0,0,0,0.3) 
 }
 
 .fret-numbers { display: flex; align-items: flex-end; padding-bottom: 3px; flex-shrink: 0; width: 100%; }
-.nut-spacer { width: 50px; flex-shrink: 0; }
+.nut-spacer { width: clamp(40px, 3.5vw, 62px); flex-shrink: 0; }
 .fret-num {
-    flex: 1; min-width: 48px; text-align: center; font-size: 0.57rem;
+    flex: 1; min-width: clamp(40px, 3.5vw, 62px); text-align: center; font-size: clamp(0.5rem, 0.55vw, 0.65rem);
     color: rgba(255,255,255,0.22); flex-shrink: 0;
     display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1;
 }
 .fret-num.has-dot { color: rgba(255,255,255,0.46); }
-.dot-marker        { font-size: 0.44rem; color: rgba(255,255,255,0.16); letter-spacing: -2px; }
+.dot-marker        { font-size: clamp(0.38rem, 0.44vw, 0.52rem); color: rgba(255,255,255,0.16); letter-spacing: -2px; }
 .dot-marker.double { letter-spacing: -1px; }
 
-.string-row { display: flex; align-items: center; flex: 0 0 auto; height: 48px; }
+.string-row { display: flex; align-items: center; flex: 0 0 auto; height: clamp(38px, 4vh, 58px); }
 .open-note {
-    width: 50px; flex-shrink: 0; text-align: center;
-    font-size: 0.65rem; color: rgba(255,255,255,0.18); font-weight: 500; cursor: default;
+    width: clamp(40px, 3.5vw, 62px); flex-shrink: 0; text-align: center;
+    font-size: clamp(0.58rem, 0.65vw, 0.76rem); color: rgba(255,255,255,0.18); font-weight: 500; cursor: default;
 }
 .open-note.scale-note { color: rgba(255,255,255,0.5); cursor: pointer; }
 .open-note.root-note  { color: var(--accent-b, #d6b89c); font-weight: bold; cursor: pointer; }
@@ -247,7 +247,7 @@ body.dot-b-dark .legend-note.is-root .legend-degree    { color: rgba(0,0,0,0.3) 
 }
 
 .fret-cell {
-    flex: 1; min-width: 48px; height: 100%; flex-shrink: 0;
+    flex: 1; min-width: clamp(40px, 3.5vw, 62px); height: 100%; flex-shrink: 0;
     position: relative; display: flex; align-items: center; justify-content: center;
 }
 .fret-line {
@@ -258,23 +258,23 @@ body.dot-b-dark .legend-note.is-root .legend-degree    { color: rgba(0,0,0,0.3) 
 
 .note-dot {
     position: relative; z-index: 2;
-    width: 29px; height: 29px; border-radius: 50%;
+    width: clamp(24px, 2.2vw, 36px); height: clamp(24px, 2.2vw, 36px); border-radius: 50%;
     background: var(--accent-a, #596361);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; user-select: none;
     transition: transform 0.12s ease, box-shadow 0.12s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.4);
 }
-.note-dot.root { background: var(--accent-b, #d6b89c); width: 33px; height: 33px; }
+.note-dot.root { background: var(--accent-b, #d6b89c); width: clamp(28px, 2.6vw, 42px); height: clamp(28px, 2.6vw, 42px); }
 .note-dot:hover  { transform: scale(1.18); box-shadow: 0 3px 10px rgba(0,0,0,0.5); }
 .note-dot:active { transform: scale(0.94); }
 
 .note-name {
-    font-size: 0.62rem; font-weight: bold;
+    font-size: clamp(0.54rem, 0.62vw, 0.76rem); font-weight: bold;
     color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     pointer-events: none; letter-spacing: 0.2px;
 }
-.note-dot.root .note-name { font-size: 0.65rem; }
+.note-dot.root .note-name { font-size: clamp(0.56rem, 0.65vw, 0.78rem); }
 
 /* BOTTOM ROW */
 .bottom-row {
@@ -832,16 +832,45 @@ body.dot-b-dark .fn-box.fn-root .fn-deg  { color: rgba(0,0,0,0.38) !important; }
 .prac-win  { color: #7ec97e; font-size: 1rem; font-weight: 600; }
 .prac-miss { color: #ff9966; font-size: 0.95rem; }
 
-/* RESPONSIVE */
+/* RESPONSIVE — small screens */
 @media (max-width: 700px) {
     body.scale-page main { padding: 0 0 0 70px; }
     .controls-bar { flex-wrap: wrap; gap: 5px 8px; }
-    .fret-num, .fret-cell { width: 40px; }
-    .nut-spacer { width: 40px; }
-    .note-dot { width: 22px; height: 22px; }
-    .note-dot.root { width: 26px; height: 26px; }
+    .fret-num, .fret-cell { min-width: 36px !important; }
+    .nut-spacer { width: 36px !important; }
+    .open-note { width: 36px !important; }
+    .note-dot { width: 20px !important; height: 20px !important; }
+    .note-dot.root { width: 24px !important; height: 24px !important; }
     .bottom-row { grid-template-columns: 1fr; gap: 6px; }
     .actions-area { flex-direction: column; align-items: flex-end; }
+}
+
+/* RESPONSIVE — 2K / 4K (≥ 1920px) */
+@media (min-width: 1920px) {
+    body.scale-page .container {
+        padding: clamp(0.8rem, 1.2vh, 1.4rem) clamp(2rem, 4vw, 5rem) clamp(0.6rem, 1vh, 1rem);
+        gap: clamp(0.5rem, 0.8vh, 1rem);
+    }
+    body.scale-page h1.glow-text {
+        font-size: clamp(1.6rem, 1.9vw, 2.6rem);
+    }
+    .string-row { height: clamp(52px, 4.2vh, 72px); }
+    .note-dot {
+        width: clamp(34px, 2.4vw, 52px) !important;
+        height: clamp(34px, 2.4vw, 52px) !important;
+    }
+    .note-dot.root {
+        width: clamp(40px, 2.8vw, 60px) !important;
+        height: clamp(40px, 2.8vw, 60px) !important;
+    }
+    .note-name { font-size: clamp(0.68rem, 0.7vw, 0.88rem) !important; }
+    .fret-cell, .fret-num { min-width: clamp(56px, 4.2vw, 80px) !important; }
+    .nut-spacer, .open-note { width: clamp(56px, 4.2vw, 80px) !important; }
+    select { font-size: clamp(0.82rem, 0.9vw, 1rem); min-width: clamp(100px, 10vw, 150px); }
+    .controls-bar { gap: clamp(10px, 1.2vw, 20px); }
+    .legend-note-name { font-size: clamp(0.92rem, 1vw, 1.1rem); }
+    .fn-name { font-size: clamp(0.95rem, 1.05vw, 1.2rem); }
+    .fn-deg  { font-size: clamp(0.58rem, 0.62vw, 0.7rem); }
 }
 
 /* ========================================= */

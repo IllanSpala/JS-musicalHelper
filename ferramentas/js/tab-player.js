@@ -64,6 +64,47 @@ let ytOffsetMs = 0;
 let ytReady = false;
 let ytVideoId = null;
 
+// ── Persistence ──────────────────────────────────────────────
+const _tabStore = (typeof JJStore === 'function') ? JJStore('tabPlayer') : null;
+
+function _tabLoad() {
+    if (!_tabStore) return;
+    const s = _tabStore.get();
+    if (s.speedRatio !== undefined) {
+        speedRatio = s.speedRatio;
+        const sl = document.getElementById('speed-sl');
+        if (sl) sl.value = Math.round(speedRatio * 100);
+    }
+    if (s.metroOn !== undefined) {
+        metroOn = s.metroOn;
+        const btn = document.getElementById('btn-metro');
+        if (btn) btn.classList.toggle('on', metroOn);
+    }
+    if (s.countInOn !== undefined) {
+        countInOn = s.countInOn;
+        const btn = document.getElementById('btn-cin');
+        if (btn) btn.classList.toggle('on', countInOn);
+    }
+    if (s.ytOffsetMs !== undefined) {
+        ytOffsetMs = s.ytOffsetMs;
+        const valInput = document.getElementById('yt-offset-val');
+        const numInput = document.getElementById('yt-offset-num');
+        if (valInput) valInput.value = ytOffsetMs;
+        if (numInput) numInput.value = ytOffsetMs;
+    }
+}
+
+function _tabSave() {
+    if (!_tabStore) return;
+    _tabStore.set({
+        speedRatio,
+        metroOn,
+        countInOn,
+        ytOffsetMs
+    });
+}
+// ─────────────────────────────────────────────────────────────
+
 /* ─── SAFE DOM & STRING HELPERS ──────────────────────────── */
 const el = id => document.getElementById(id);
 const qsa = sel => document.querySelectorAll(sel);
@@ -82,6 +123,7 @@ function shorten(n, max = 16) {
 
 /* ─── BOOT ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+    _tabLoad();
 
     if (typeof alphaTab === 'undefined') {
         fatalError(t('tp_err_load'));
@@ -105,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     el('btn-cin').addEventListener('click', () => {
         countInOn = !countInOn;
         el('btn-cin').classList.toggle('on', countInOn);
+        _tabSave();
     });
 
     // Speed Controls
@@ -210,23 +253,27 @@ document.addEventListener('DOMContentLoaded', () => {
     el('yt-offset-val').addEventListener('input', () => {
         ytOffsetMs = parseInt(el('yt-offset-val').value) || 0;
         el('yt-offset-num').value = ytOffsetMs;
+        _tabSave();
     });
 
     // Offset number input → sync slider
     el('yt-offset-num').addEventListener('input', () => {
         ytOffsetMs = parseInt(el('yt-offset-num').value) || 0;
         el('yt-offset-val').value = ytOffsetMs;
+        _tabSave();
     });
 
     el('yt-offset-minus').addEventListener('click', () => {
         ytOffsetMs = (parseInt(el('yt-offset-num').value) || 0) - 50;
         el('yt-offset-val').value = ytOffsetMs;
         el('yt-offset-num').value = ytOffsetMs;
+        _tabSave();
     });
     el('yt-offset-plus').addEventListener('click', () => {
         ytOffsetMs = (parseInt(el('yt-offset-num').value) || 0) + 50;
         el('yt-offset-val').value = ytOffsetMs;
         el('yt-offset-num').value = ytOffsetMs;
+        _tabSave();
     });
     el('yt-community-load').addEventListener('click', loadCommunityOffset);
     el('yt-community-save').addEventListener('click', saveCommunityOffset);
@@ -758,6 +805,7 @@ function onSpeedInput() {
     speedRatio = parseInt(el('speed-sl').value) / 100;
     syncBpmDisplay();
     if (api) api.playbackSpeed = speedRatio;
+    _tabSave();
 }
 
 function syncBpmDisplay() {
@@ -1274,6 +1322,7 @@ function closePop() {
 function toggleMetro() {
     metroOn = !metroOn;
     el('btn-metro').classList.toggle('on', metroOn);
+    _tabSave();
     if (metroOn && isPlaying) startMetro();
     else if (!metroOn) { pauseMetro(); clearDots(); }
 }

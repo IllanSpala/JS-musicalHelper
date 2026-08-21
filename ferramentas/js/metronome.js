@@ -1,9 +1,29 @@
 //BASIC AUDIO SETUP
-let audioCtx; 
-let isPlaying = false; 
-let nextNoteTimeA = 0.0; 
-let nextNoteTimeB = 0.0; 
+let audioCtx;
+let isPlaying = false;
+let nextNoteTimeA = 0.0;
+let nextNoteTimeB = 0.0;
 let timerID = null;
+
+// ── Persistence ──────────────────────────────────────────────
+const _metroStore = (typeof JJStore === 'function') ? JJStore('polyMetro') : null;
+
+function _metroSave() {
+    if (!_metroStore) return;
+    _metroStore.set({
+        bpm:   parseInt($bpm.val())   || 120,
+        beatA: parseInt($beatA.val()) || 3,
+        beatB: parseInt($beatB.val()) || 4,
+    });
+}
+
+function _metroLoad() {
+    if (!_metroStore) return;
+    const s = _metroStore.get();
+    if (s.bpm)   $bpm.val(s.bpm);
+    if (s.beatA) $beatA.val(s.beatA);
+    if (s.beatB) $beatB.val(s.beatB);
+}
 
 //COUNTERS FOR VISUALS
 let beatCountA = 0;
@@ -170,5 +190,8 @@ window.addEventListener('languageChanged', () => {
 });
 
 // INITIALIZATION
-
+_metroLoad();
 drawShapes();
+
+// Save on every user interaction
+$bpm.add($beatA).add($beatB).on('change input', _metroSave);

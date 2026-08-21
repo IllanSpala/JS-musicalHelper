@@ -169,8 +169,33 @@ let state = {
     chugActive: false,
     _customMidis: null,
     _chugMidiOverride: null, 
-    currentTheme: 0,
+    currentTheme: 2, // Changed default to 2 as mentioned in code
 };
+
+// ── Persistence ──────────────────────────────────────────────
+const _scaleStore = (typeof JJStore === 'function') ? JJStore('scaleMachine') : null;
+if (_scaleStore) {
+    const s = _scaleStore.get();
+    if (s.instrument) state.instrument = s.instrument;
+    if (s.tuningName) state.tuningName = s.tuningName;
+    if (s.root)       state.root = s.root;
+    if (s.scaleName)  state.scaleName = s.scaleName;
+    if (s.frets)      state.frets = s.frets;
+    if (s.currentTheme !== undefined) state.currentTheme = s.currentTheme;
+}
+function _scaleSave() {
+    if (_scaleStore) {
+        _scaleStore.set({
+            instrument: state.instrument,
+            tuningName: state.tuningName,
+            root: state.root,
+            scaleName: state.scaleName,
+            frets: state.frets,
+            currentTheme: state.currentTheme
+        });
+    }
+}
+// ─────────────────────────────────────────────────────────────
 
 let expandedDegree = null;
 
@@ -294,10 +319,12 @@ function applyThemeToBody(idx) {
     document.body.dataset.theme = idx;
     document.body.classList.toggle('dot-a-dark', THEME_DOT_A_DARK[idx]);
     document.body.classList.toggle('dot-b-dark', THEME_DOT_B_DARK[idx]);
+    _scaleSave();
 }
 
 // --- RENDER FRETBOARD ---
 function renderFretboard() {
+    _scaleSave();
     const scaleNotes   = getScaleNotes(state.root, state.scaleName);
     const rootSemitone = getRootSemitone(state.root);
     const scaleMap     = {};
@@ -967,10 +994,8 @@ function initControls() {
         btn.addEventListener('click', () => applyThemeToBody(i));
     });
     
-    // Lê o tema salvo ou usa o 2 como padrão para a página de escalas
-    const savedTheme = localStorage.getItem('appTheme');
-    const initialTheme = savedTheme !== null ? parseInt(savedTheme) : 2;
-    applyThemeToBody(initialTheme);
+    // Lê o tema salvo
+    applyThemeToBody(state.currentTheme);
 
     document.querySelectorAll('.instrument-btn').forEach(btn => {
         btn.addEventListener('click', () => {
