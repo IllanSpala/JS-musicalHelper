@@ -44,7 +44,7 @@ export default function Protocol() {
   const protocols = [
     {
       step: '01',
-      title: 'Treinar com Metrônomo',
+      title: 'Metrônomo Polirrítmico',
       desc: 'Sincronização de batidas precisas. Uma interface para segurar seu "time", dominar subdivisões sem perder o foco na música.',
       href: "./ferramentas/PolyMetro.html",
       bgUrl: "./metronome_piano.png"
@@ -65,7 +65,7 @@ export default function Protocol() {
     },
     {
       step: '04',
-      title: 'Mapa de Intervalos',
+      title: 'Mapa Harmônico',
       desc: 'Visualize a teia harmônica dos acordes em tempo real. Construa progressões arrastando shapes CAGED, ouça arpejos e descubra a lógica dos graus tonais e intervalos.',
       href: "./ferramentas/HarmonicMap.html",
       bgUrl: "./circle_of_fifths.svg"

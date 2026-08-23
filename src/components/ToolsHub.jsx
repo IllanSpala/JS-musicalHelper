@@ -4,8 +4,8 @@ import { useState } from 'react';
 const TOOLS = [
   {
     id: 'poly-metro',
-    label: 'Metrônomo Politonal',
-    shortLabel: 'Metrônomo',
+    label: 'Metrônomo Polirrítmico',
+    shortLabel: 'Metrônomo Polirrítmico',
     desc: 'Subdivida o tempo com precisão cirúrgica. Sincronize seu timing.',
     icon: '⟁',
     href: './ferramentas/PolyMetro.html',
@@ -34,8 +34,8 @@ const TOOLS = [
   },
   {
     id: 'harmonic-map',
-    label: 'Mapa de Intervalos',
-    shortLabel: 'Intervalos',
+    label: 'Mapa Harmônico',
+    shortLabel: 'Mapa Harmônico',
     desc: 'Teia harmônica dos acordes. Construa progressões e descubra os graus tonais.',
     icon: '◎',
     href: './ferramentas/HarmonicMap.html',
