@@ -299,7 +299,7 @@ function playArpeggio(midiNotes, delay = 0.10, duration = 1.8, startAt = null) {
 }
 
 function parseFullChord(chordStr) {
-    const match = chordStr.trim().match(/^([A-G][#b]?)(.*)$/);
+    const match = chordStr.trim().match(/^([A-G][#b]?)(.*)$/i);
     if (!match) return null;
     const rootStr = match[1].charAt(0).toUpperCase() + match[1].slice(1);
     const quality = match[2].toLowerCase().trim();
@@ -351,26 +351,38 @@ function getFunctionalSuggestions(chordStr) {
     const root = match[1].charAt(0).toUpperCase() + match[1].slice(1);
     const quality = match[2].toLowerCase().trim();
     let suggestions = [];
+
+    const push = (chord, reason) => {
+        if (!suggestions.some(s => s.chord === chord)) {
+            suggestions.push({ chord, reason });
+        }
+    };
+
     if (quality === '' || quality === 'maj' || quality === 'maj7') {
-        suggestions.push(
-            transposeNote(root, 2) + 'm7', transposeNote(root, 7) + '7', root + (quality === 'maj7' ? 'maj7' : ''),
-            transposeNote(root, 5) + (quality === 'maj7' ? 'maj7' : ''), transposeNote(root, 9) + 'm' + (quality === 'maj7' ? '7' : '')
-        );
+        push(transposeNote(root, 2) + 'm7', 'Grau II (Subdominante) - Leva à tensão');
+        push(transposeNote(root, 7) + '7', 'Grau V (Dominante) - Cria tensão e pede resolução');
+        push(transposeNote(root, 5) + (quality === 'maj7' ? 'maj7' : ''), 'Grau IV (Subdominante) - Expansão e relaxamento');
+        push(transposeNote(root, 9) + 'm' + (quality === 'maj7' ? '7' : ''), 'Grau VI (Relativo Menor) - Mudança de emoção para sombrio');
     } else if (quality === 'm' || quality === 'min' || quality === 'm7') {
-        suggestions.push(
-            transposeNote(root, 2) + 'm7b5', transposeNote(root, 7) + '7', root + (quality === 'm7' ? 'm7' : 'm'),
-            transposeNote(root, 5) + 'm' + (quality === 'm7' ? '7' : ''), transposeNote(root, 8) + (quality === 'm7' ? 'maj7' : '')
-        );
+        push(transposeNote(root, 2) + 'm7b5', 'Grau IIø - Prepara a cadência menor');
+        push(transposeNote(root, 7) + '7', 'Grau V (Dominante Menor) - Tensão dramática');
+        push(transposeNote(root, 5) + 'm' + (quality === 'm7' ? '7' : ''), 'Grau IVm - Tristeza profunda, continuação');
+        push(transposeNote(root, 8) + (quality === 'm7' ? 'maj7' : ''), 'Grau bVI - Fuga inesperada, esperança');
     } else if (quality === '7' || quality === '9') {
-        suggestions.push(transposeNote(root, 5) + 'maj7', transposeNote(root, 5) + 'm7', transposeNote(root, 6) + '7');
+        push(transposeNote(root, 5) + 'maj7', 'Resolução Maior (Tônica) - Fim da tensão');
+        push(transposeNote(root, 5) + 'm7', 'Resolução Menor (Tônica) - Resolução melancólica');
+        push(transposeNote(root, 6) + '7', 'SubV7 (Substituto Tritonal) - Deslize cromático jazzístico');
     } else if (quality === 'dim' || quality === 'dim7' || quality === 'm7b5' || quality === 'ø') {
-        suggestions.push(transposeNote(root, 1) + 'm7', transposeNote(root, 1) + 'maj7');
+        push(transposeNote(root, 1) + 'm7', 'Resolução Menor (Meio tom acima)');
+        push(transposeNote(root, 1) + 'maj7', 'Resolução Maior (Meio tom acima)');
     } else if (quality === 'sus4' || quality === 'sus2') {
-        suggestions.push(root, root + 'm');
+        push(root, 'Resolução Natural Maior');
+        push(root + 'm', 'Resolução Natural Menor');
     } else {
-        suggestions.push(transposeNote(root, 5), transposeNote(root, 7));
+        push(transposeNote(root, 5), 'Salto de Quarta - Expansão');
+        push(transposeNote(root, 7), 'Salto de Quinta - Retorno à Tônica');
     }
-    return [...new Set(suggestions)];
+    return suggestions;
 }
 
 function getQualityType(quality) {
@@ -477,6 +489,11 @@ function renderWheel() {
         el.dataset.interval = node.interval;
         el.setAttribute('data-color', node.color);
 
+        // Adiciona a tooltip diretamente no nó da roda para evitar flickering 
+        if (chordStr) {
+            attachChordTooltip(el, chordStr, false, { wheelNode: node });
+        }
+
         el.addEventListener('mouseenter', () => {
             updateGuide(node);
             el.style.transform = 'translate(-50%, -50%) scale(1.15)';
@@ -493,7 +510,7 @@ function renderWheel() {
                 n.style.backgroundColor = '#111';
                 n.style.boxShadow = '';
             });
-            playChordFromNode(node); // Apenas toca o audio, sem tocar nos cards de pesquisa
+            playChordFromNode(node);
             if (state.sustainMode) {
                 el.classList.add('sustain-active');
                 el.style.setProperty('--sustain-color', node.color);
@@ -755,6 +772,19 @@ function _renderQualityTabs(rootStr, activeSuffix) {
     _updateTheoryBox(activeSuffix);
 }
 
+function getSortedShapes(shapes, targetSemi, tuningMidis) {
+    return shapes.map(shape => {
+        const baseStringMidi = tuningMidis[shape.baseAttr];
+        let rootFret = findFretOnString(baseStringMidi, targetSemi);
+        let lowestFret = rootFret - shape.rootOffset;
+
+        while (lowestFret >= 12) lowestFret -= 12;
+        while (lowestFret < 0) lowestFret += 12;
+        
+        return { shape, lowestFret };
+    }).sort((a, b) => a.lowestFret - b.lowestFret).map(obj => obj.shape);
+}
+
 function _renderCards(rootStr, suffix) {
     const container = document.getElementById('chord-cards-container');
     container.innerHTML = '';
@@ -777,7 +807,12 @@ function _renderCards(rootStr, suffix) {
         return;
     }
 
-    const shapes = CHORD_SHAPES[type] || CHORD_SHAPES.major;
+    // Insere o rótulo Shapes antes dos cards
+    container.innerHTML = `<p class="hm-section-label" style="margin-top:20px;">Shapes (CAGED)</p>`;
+
+    let shapes = CHORD_SHAPES[type] || CHORD_SHAPES.major;
+    shapes = getSortedShapes(shapes, targetSemi, tuningMidis);
+
     shapes.forEach(shape => {
         const baseStringMidi = tuningMidis[shape.baseAttr];
         let rootFret = findFretOnString(baseStringMidi, targetSemi);
@@ -838,7 +873,6 @@ function _renderCards(rootStr, suffix) {
             e.dataTransfer.effectAllowed = 'copy';
         });
 
-        attachChordTooltip(card, fullChord);
         container.appendChild(card);
     });
 }
@@ -849,7 +883,94 @@ function getChordNoteName(semitone, rootName) {
     return names[((semitone % 12) + 12) % 12];
 }
 
-function attachChordTooltip(element, getChordStr) {
+function getChordTooltipContent(fullChord, options = {}) {
+    const parsed = parseFullChord(fullChord);
+    if (!parsed) return '';
+
+    const rootMatch = fullChord.trim().match(/^([A-G][#b]?)/i);
+    const rootName = rootMatch ? rootMatch[1].charAt(0).toUpperCase() + rootMatch[1].slice(1) : 'C';
+    const qualityMatch = fullChord.trim().match(/^([A-G][#b]?)(.*)$/i);
+    const suffix = qualityMatch ? qualityMatch[2].toLowerCase() : '';
+    
+    // Notes
+    const noteNames = parsed.intervals.map(off => getChordNoteName(parsed.root + off, rootName));
+    const notesHtml = noteNames.map(n => `<span class="tooltip-note-badge">${n}</span>`).join('');
+    
+    // Theory
+    const type = getQualityType(suffix);
+    const theoryObj = CHORD_THEORY_DICT[suffix] || CHORD_THEORY_DICT[''];
+    
+    // SVG Shape (only if guitar)
+    let svgData = '';
+    if (state.instrument === 'guitar') {
+        let shapes = CHORD_SHAPES[type] || CHORD_SHAPES.major;
+        const tuningMidis = [...TUNINGS.guitar[state.tuningName]];
+        shapes = getSortedShapes(shapes, parsed.root, tuningMidis);
+        const shape = options.shapeObj || shapes[0]; // Usa o shape passado, senão o primeiro (padrão)
+        
+        let rootFret = findFretOnString(tuningMidis[shape.baseAttr], parsed.root);
+        let lowestFret = rootFret - shape.rootOffset;
+        if (lowestFret > 12) lowestFret -= 12; else if (lowestFret < 0) lowestFret += 12;
+        const absoluteFrets = shape.offsets.map(off => off === 'x' ? 'x' : lowestFret + off);
+        const perStringNotes = absoluteFrets.map((fret, si) => {
+            if (fret === 'x') return null;
+            const open = tuningMidis[si];
+            return open !== undefined ? getNoteName((open + fret) % 12) : null;
+        });
+        svgData = generateSVGDiagram(absoluteFrets, perStringNotes);
+    }
+    
+    // Suggestions
+    const suggestions = getFunctionalSuggestions(fullChord);
+    const suggestionsHtml = suggestions.length > 0
+        ? suggestions.map(s => `
+            <div style="display:flex; flex-direction:column; gap:2px; margin-bottom: 8px; width: 100%;">
+                <button class="tooltip-suggestion-badge" data-chord="${s.chord}" style="align-self:flex-start;">${s.chord}</button>
+                <span style="font-size:0.65rem; color:rgba(255,255,255,0.55); padding-left: 2px;">${s.reason}</span>
+            </div>
+        `).join('')
+        : '<span style="font-size:0.8rem; color:#888;">Nenhuma sugestão</span>';
+
+    let wheelHeader = '';
+    let wheelInfo = '';
+    let titleColor = '#fff';
+    
+    if (options.wheelNode) {
+        titleColor = options.wheelNode.color;
+        wheelHeader = `<div style="font-size:0.75rem; font-weight:800; color:${titleColor}; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase;">Grau ${options.wheelNode.degree}</div>`;
+        wheelInfo = `
+            <div class="tooltip-section" style="margin-bottom:12px; border-left: 3px solid ${titleColor}; padding-left: 8px; background: rgba(255,255,255,0.03); border-radius: 0 4px 4px 0;">
+                <span style="font-size:0.75rem; font-weight:700; color:${titleColor}; text-transform:uppercase; letter-spacing:0.5px;">Função no Mapa</span>
+                <p style="font-size:0.75rem; color:#ccc; line-height:1.4; margin:4px 0 0;">${options.wheelNode.hover}</p>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="tooltip-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 8px;">
+            <div>
+                ${wheelHeader}
+                <h3 style="margin:0; font-size:1.1rem; color:${titleColor};">${fullChord}</h3>
+            </div>
+            <span class="hm-theory-formula" style="font-size:0.75rem; opacity:0.8; margin-top: ${options.wheelNode ? '20px' : '0'};">${theoryObj.formula}</span>
+        </div>
+        ${wheelInfo}
+        ${svgData ? `<div style="display:flex; justify-content:center; background:rgba(0,0,0,0.3); border-radius:6px; margin-bottom: 12px; padding:6px;">${svgData}</div>` : ''}
+        <div class="tooltip-section" style="margin-bottom:12px;">
+            <span class="tooltip-label">Notas</span>
+            <div class="tooltip-notes">${notesHtml}</div>
+        </div>
+        <div class="tooltip-section" style="margin-bottom:12px;">
+            <p style="font-size:0.75rem; color:#aaa; line-height:1.4; margin:0;">${theoryObj.description}</p>
+        </div>
+        <div class="tooltip-section" style="margin-bottom:0;">
+            <span class="tooltip-label">Próximos Sugeridos</span>
+            <div class="tooltip-suggestions">${suggestionsHtml}</div>
+        </div>
+    `;
+}
+
+function attachChordTooltip(element, getChordStr, isSub = false, options = {}) {
     let tooltipEl = null;
     let hideTimer = null;
 
@@ -858,13 +979,21 @@ function attachChordTooltip(element, getChordStr) {
             tooltipEl.remove();
             tooltipEl = null;
         }
-        document.querySelectorAll('.chord-hover-tooltip').forEach(el => el.remove());
     };
 
-    const scheduleHide = (delay = 350) => {
+    const scheduleHide = (delay = 400) => {
         if (hideTimer) clearTimeout(hideTimer);
         hideTimer = setTimeout(() => {
-            removeTooltipDOM();
+            if (tooltipEl) {
+                tooltipEl.classList.remove('show');
+                // Remove do DOM apenas após a transição CSS (0.2s)
+                setTimeout(() => {
+                    // Verifica se não reentrou enquanto desvanecia
+                    if (tooltipEl && !tooltipEl.classList.contains('show')) {
+                        removeTooltipDOM();
+                    }
+                }, 250);
+            }
         }, delay);
     };
 
@@ -872,6 +1001,9 @@ function attachChordTooltip(element, getChordStr) {
         if (hideTimer) {
             clearTimeout(hideTimer);
             hideTimer = null;
+        }
+        if (tooltipEl) {
+            tooltipEl.classList.add('show');
         }
     };
 
@@ -883,43 +1015,62 @@ function attachChordTooltip(element, getChordStr) {
         if (!parsed) return;
 
         if (tooltipEl && tooltipEl.dataset.chord === fullChord) {
+            if (!document.body.contains(tooltipEl)) {
+                document.body.appendChild(tooltipEl);
+            }
+            requestAnimationFrame(() => tooltipEl.classList.add('show'));
             return;
         }
 
         removeTooltipDOM();
 
+        // Se for tooltip principal, garante que os outros principais sejam removidos
+        if (!isSub) {
+            document.querySelectorAll('.chord-hover-tooltip.main-tt').forEach(el => el.remove());
+        } else {
+            document.querySelectorAll('.chord-hover-tooltip.sub-tt').forEach(el => el.remove());
+        }
+
         const rect = element.getBoundingClientRect();
-        const rootMatch = fullChord.trim().match(/^([A-G][#b]?)/i);
-        const rootName = rootMatch ? rootMatch[1].charAt(0).toUpperCase() + rootMatch[1].slice(1) : 'C';
-
-        const noteNames = parsed.intervals.map(off => getChordNoteName(parsed.root + off, rootName));
-        const notesHtml = noteNames.map(n => `<span class="tooltip-note-badge">${n}</span>`).join('');
-        const suggestions = getFunctionalSuggestions(fullChord);
-        const suggestionsHtml = suggestions.length > 0
-            ? suggestions.map(s => `<button class="tooltip-suggestion-badge" data-chord="${s}" draggable="true" title="Clique para arpegiar ou arraste">${s}</button>`).join('')
-            : '<span style="font-size:0.8rem; color:#888;">Nenhuma sugestão</span>';
-
+        
         tooltipEl = document.createElement('div');
-        tooltipEl.className = 'chord-hover-tooltip';
+        tooltipEl.className = 'chord-hover-tooltip' + (isSub ? ' sub-tt' : ' main-tt');
         tooltipEl.dataset.chord = fullChord;
-        tooltipEl.innerHTML = `
-            <h3>${fullChord}</h3>
-            <div class="tooltip-section">
-                <span class="tooltip-label">Notas do Acorde</span>
-                <div class="tooltip-notes">${notesHtml}</div>
-            </div>
-            <div class="tooltip-section" style="margin-bottom:0;">
-                <span class="tooltip-label">Próximos Sugeridos</span>
-                <div class="tooltip-suggestions">${suggestionsHtml}</div>
-            </div>
-        `;
+        
+        const wheelCenter = element.closest('.hm-center');
+        
+        // Aplica bridge transparente para tooltips normais. Roda não tem bridge para não comer cliques.
+        tooltipEl.style.padding = (wheelCenter && !isSub) ? '0px' : '20px';
+        tooltipEl.style.backgroundClip = 'content-box';
+        tooltipEl.style.backgroundColor = 'transparent';
+        
+        const innerContent = document.createElement('div');
+        innerContent.style.background = 'rgba(25, 20, 20, 0.95)';
+        innerContent.style.backdropFilter = 'blur(10px)';
+        innerContent.style.border = '1px solid rgba(255,255,255,0.1)';
+        innerContent.style.borderRadius = '10px';
+        innerContent.style.padding = '14px';
+        innerContent.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
+        innerContent.style.pointerEvents = 'auto'; // Permitir interação dentro do card
+        innerContent.innerHTML = getChordTooltipContent(fullChord, options);
+        
+        tooltipEl.appendChild(innerContent);
         document.body.appendChild(tooltipEl);
 
         tooltipEl.addEventListener('mouseenter', cancelHide);
-        tooltipEl.addEventListener('mouseleave', () => scheduleHide(300));
+        tooltipEl.addEventListener('mouseleave', () => scheduleHide((wheelCenter && !isSub) ? 800 : 300));
 
         tooltipEl.querySelectorAll('.tooltip-suggestion-badge').forEach(badge => {
             const sugChord = badge.dataset.chord;
+            
+            // Adiciona sub-tooltip para badges de sugestões
+            if (!isSub) {
+                attachChordTooltip(badge, sugChord, true, {});
+                
+                // Eventos adicionais para evitar que o main-tt feche ao entrar no sub-tt
+                badge.addEventListener('mouseenter', cancelHide);
+            }
+
             badge.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const p = parseFullChord(sugChord);
@@ -938,35 +1089,62 @@ function attachChordTooltip(element, getChordStr) {
             });
         });
 
-        const ttWidth = tooltipEl.offsetWidth || 270;
-        const ttHeight = tooltipEl.offsetHeight || 140;
+        // Força a leitura do tamanho real sem o padding externo atrapalhar
+        const ttWidth = innerContent.offsetWidth + 16 || 280;
+        const ttHeight = innerContent.offsetHeight + 16 || 240;
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        let left = rect.right + 14;
-        if (left + ttWidth > viewportWidth - 10) {
-            left = rect.left - ttWidth - 14;
-        }
-        if (left < 10) {
-            left = Math.max(10, Math.min(rect.left, viewportWidth - ttWidth - 10));
+        let left;
+        let top;
+        const panel = element.closest('.hm-panel');
+        
+        if (panel && !isSub) {
+            // Se estiver no painel lateral, abre à direita de todo o painel
+            left = panel.getBoundingClientRect().right - 10;
+            top = rect.top + (rect.height / 2) - (ttHeight / 2);
+            tooltipEl.style.pointerEvents = 'none'; // Impede bloqueio de cliques no painel
+        } else if (wheelCenter && !isSub) {
+            // Na roda, ancorar o card no canto inferior direito da própria roda (harmonic-wheel)
+            const wheelElement = document.getElementById('harmonic-wheel');
+            if (wheelElement) {
+                const wheelRect = wheelElement.getBoundingClientRect();
+                left = wheelRect.right + 20; // Fixo à direita da roda
+            } else {
+                left = viewportWidth - ttWidth - 280;
+            }
+            // Centralizado verticalmente para caber de forma segura em qualquer tela
+            top = (viewportHeight / 2) - (ttHeight / 2);
+        } else {
+            // Sub-cards
+            const isLeftHalf = (rect.left + rect.width / 2) < (viewportWidth / 2);
+            if (isLeftHalf) {
+                left = rect.left - ttWidth + 15;
+            } else {
+                left = rect.right - 15;
+            }
+            top = rect.top + (rect.height / 2) - (ttHeight / 2);
         }
 
-        let top = rect.top + (rect.height / 2) - (ttHeight / 2);
+        // Limites de segurança
+        if (left + ttWidth > viewportWidth - 10) left = viewportWidth - ttWidth - 10;
+        if (left < 10) left = 10;
         if (top < 10) top = 10;
         if (top + ttHeight > viewportHeight - 10) top = viewportHeight - ttHeight - 10;
 
         tooltipEl.style.position = 'fixed';
         tooltipEl.style.top = `${top}px`;
         tooltipEl.style.left = `${left}px`;
-        tooltipEl.style.zIndex = '999999';
+        tooltipEl.style.zIndex = isSub ? '9999999' : '999999';
 
         requestAnimationFrame(() => {
             if (tooltipEl) tooltipEl.classList.add('show');
         });
     };
 
+    const isWheelNode = element.closest('.hm-center') !== null;
     element.addEventListener('mouseenter', showTooltip);
-    element.addEventListener('mouseleave', () => scheduleHide(350));
+    element.addEventListener('mouseleave', () => scheduleHide((isWheelNode && !isSub) ? 800 : 350));
     element.addEventListener('dragstart', () => scheduleHide(0));
 }
 
@@ -992,49 +1170,6 @@ window._switchQuality = function (rootStr, suffix) {
     }
 };
 
-function updateChordSuggestions() {
-    const container = document.getElementById('chord-suggestions');
-    if (!container) return;
-    container.innerHTML = '';
-    const bases = ['', 'm', 'dim', 'aug', 'sus4', '7', 'maj7', 'm7'];
-    const chordInput = document.getElementById('chord-input');
-    if (!chordInput) return;
-
-    let match = chordInput.value.trim().match(/^([A-G][#b]?)/i);
-    let r = match ? match[1].charAt(0).toUpperCase() + match[1].slice(1) : 'C';
-
-    bases.forEach(q => {
-        const chordName = r + q;
-        const btn = document.createElement('button');
-        btn.className = 'hm-quality-pill';
-        btn.style.cssText = 'text-transform: uppercase; cursor:grab;';
-        btn.textContent = chordName;
-        btn.setAttribute('draggable', 'true');
-
-        btn.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', chordName);
-            e.dataTransfer.effectAllowed = 'copy';
-        });
-
-        attachChordTooltip(btn, chordName);
-
-        // ATUALIZADO: Clicar na sugestão agora reflete na barra, desenha os cards e toca a nota sem afetar a roda central.
-        btn.onclick = () => {
-            if (chordInput) chordInput.value = chordName;
-            
-            const parsed = parseFullChord(chordName);
-            if (parsed) {
-                renderChordCards(chordName);
-                const baseMidi = 48 + parsed.root;
-                const midiNotes = parsed.intervals
-                    .map(off => baseMidi + off)
-                    .sort((a, b) => a - b);
-                playArpeggio(midiNotes, 0.07, 1.6);
-            }
-        };
-        container.appendChild(btn);
-    });
-}
 
 let progression = [];
 
@@ -1162,13 +1297,11 @@ function setupUI() {
     if (btnInfo && infoModal) btnInfo.onclick = () => infoModal.classList.add('active');
     if (btnCloseInfo && infoModal) btnCloseInfo.onclick = () => infoModal.classList.remove('active');
 
-    updateChordSuggestions();
 
     if (chordInput) {
         // FALHA 1 CORRIGIDA: Live Search desacoplado da roda.
         // O listener 'input' faz parse em tempo real e renderiza os cards independentemente.
         chordInput.addEventListener('input', () => {
-            updateChordSuggestions();
             const val = chordInput.value.trim();
             if (val.length >= 1) {
                 const parsed = parseFullChord(val);
@@ -1198,7 +1331,6 @@ function setupUI() {
             if (raw) {
                 e.preventDefault();
                 chordInput.value = raw.trim();
-                updateChordSuggestions();
                 const parsed = parseFullChord(raw.trim());
                 if (parsed) {
                     renderChordCards(raw.trim());

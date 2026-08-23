@@ -4,16 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Mapeie intervalos, acordes e progressões harmônicas. Explore a lógica dos graus tonais com o Mapa de Intervalos. JoJoTools.">
-    <title>Mapa de Intervalos — JoJoTools</title>
+    <meta name="description" content="Mapeie intervalos, acordes e progressões harmônicas. Explore a lógica dos graus tonais com o Mapa Harmônico. JoJoTools.">
+    <title>Mapa Harmônico — JoJoTools</title>
 
     <!-- Fontes e Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Estilos -->
     <link rel="stylesheet" href="css/menu.css">
@@ -31,7 +29,7 @@
     <script src="js/script.js" defer></script>
     <script src="js/firebase.js"></script>
     <script src="js/jj-store.js"></script>
-    <script src="js/harmonic.js" defer></script>
+    <script src="js/harmonic.js?v=2" defer></script>
 </head>
 
 <body class="scale-page fretboard-fade hm-page">
@@ -46,22 +44,19 @@
             <a href="PolyMetro.html">Metrônomo</a>
             <a href="ScaleMachine.html">Escalas</a>
             <a href="TabPlayer.html">Tablatura</a>
-            <a href="HarmonicMap.html" aria-current="page">Intervalos</a>
+            <a href="HarmonicMap.html" aria-current="page">Mapa Harmônico</a>
         </nav>
 
         <nav style="display:flex; align-items:center; gap:14px;" aria-label="Conta e redes sociais">
-            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer"
-                aria-label="GitHub IllanSpala" style="color:white; text-decoration:none; font-size:1.2rem;">
+            <a class="github-link" href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer" aria-label="GitHub IllanSpala" style="color:white; text-decoration:none; font-size:1.2rem;">
                 <i class="fab fa-github" aria-hidden="true"></i>
             </a>
 
             <!-- Auth UI -->
-            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn"
-                style="font-size:0.8rem; padding:7px 16px;">
+            <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:0.8rem; padding:7px 16px;">
                 <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login
             </a>
-            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'"
-                title="Perfil do usuário" style="cursor:pointer; display:flex; align-items:center; gap:6px;">
+            <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" title="Perfil do usuário" style="cursor:pointer; display:flex; align-items:center; gap:6px;">
                 <img id="auth-avatar" src="" alt="Avatar do usuário" class="chip-avatar">
                 <span id="auth-username" class="chip-name"></span>
             </div>
@@ -74,16 +69,26 @@
         <div class="chord-modal__box">
             <h3 id="modal-title">
                 <i class="fas fa-atom" style="color:#5b50d6; margin-right:8px;"></i>
-                Como funciona o Mapa de Intervalos?
+                Como funciona o Mapa Harmônico?
             </h3>
-            <p><strong>Lado Direito (Graus Naturais):</strong> Energias puras, abertas, expansivas e doces.</p>
-            <p><strong>Lado Esquerdo (Graus Bemóis e 4):</strong> Energias de contração, sombrias, tensas e trágicas.
-            </p>
-            <p><strong>Eixo Vertical (1 e #4):</strong> O repouso absoluto vs. a tensão alienígena máxima.</p>
-            <p
-                style="font-size:0.82rem; color:#888; border-top:1px solid rgba(255,255,255,0.07); padding-top:12px; margin-top:0;">
-                Desenvolvido por <a href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer"
-                    style="color:#5b50d6; text-decoration:none;">IllanSpala</a> · JoJoTools
+            <div class="hm-theory-content" style="max-height: 60vh; overflow-y: auto; padding-right: 8px; margin-bottom: 16px; font-size: 0.9rem; line-height: 1.6; color: rgba(255,255,255,0.8);">
+                <p>O <strong>Mapa Harmônico</strong> é uma representação visual das relações de tensão e repouso na música, estruturado em torno de um centro tonal absoluto (sua Tônica).</p>
+                
+                <h4 style="color:#d6b89c; margin-top: 16px; margin-bottom: 8px;">1. Eixo Horizontal: Luminosidade</h4>
+                <p><strong>Lado Direito (Graus Naturais - 2, 3, 5, 6, 7):</strong> Representam energias puras, abertas, expansivas e brilhantes. Acordes aqui tendem a soar mais "felizes" ou estáveis (típicos do campo harmônico maior).</p>
+                <p><strong>Lado Esquerdo (Graus Bemóis e 4 - b2, b3, 4, b5, b6, b7):</strong> Representam energias de contração, sombrias, densas e melancólicas. Acordes aqui puxam a música para um contexto mais escuro ou tenso (típicos do campo menor).</p>
+
+                <h4 style="color:#d6b89c; margin-top: 16px; margin-bottom: 8px;">2. Eixo Vertical: Tensão e Repouso</h4>
+                <p><strong>Topo (Grau 1 - Tônica):</strong> O repouso absoluto. A casa, o ponto de equilíbrio de gravidade de toda a música.</p>
+                <p><strong>Base (Grau #4/b5 - Trítono):</strong> A tensão alienígena máxima. O ponto de maior instabilidade gravitacional, que implora por resolução.</p>
+                
+                <h4 style="color:#d6b89c; margin-top: 16px; margin-bottom: 8px;">3. Mecânica Prática</h4>
+                <p>• <strong>Hover:</strong> Passe o mouse sobre os graus ao redor da tônica para visualizar os acordes gerados em cada ponto e compreender suas funções teóricas.</p>
+                <p>• <strong>Sustain Mode:</strong> Ative para permitir que as notas soem de forma contínua ao testar harmonias, criando texturas imersivas.</p>
+                
+            </div>
+            <p style="font-size:0.82rem; color:#888; border-top:1px solid rgba(255,255,255,0.07); padding-top:12px; margin-top:0;">
+                Desenvolvido por <a href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer" style="color:#5b50d6; text-decoration:none;">IllanSpala</a> · JoJoTools
             </p>
             <button id="btn-close-info" class="glass-btn small-btn" style="align-self:flex-end;">Entendi</button>
         </div>
@@ -97,18 +102,10 @@
             <aside class="hm-panel" aria-label="Painel de acordes CAGED">
                 <h2 class="hm-panel__title">Painel do Acorde</h2>
 
-                <div class="hm-chord-input-wrap" id="chord-drag-source"
-                    title="Digite a cifra ou arraste o ícone para o centro">
-                    <i class="fas fa-music hm-input-icon" id="chord-drag-handle" draggable="true" aria-hidden="true"
-                        style="cursor: grab;" title="Arraste este ícone para o centro do mapa"></i>
-                    <input type="text" id="chord-input" placeholder="Ex: C, Dm7, G#maj7" value="" class="glass-input"
-                        autocomplete="off" spellcheck="false" aria-label="Digite a cifra do acorde">
+                <div class="hm-chord-input-wrap" id="chord-drag-source" title="Digite a cifra ou arraste o ícone para o centro">
+                    <i class="fas fa-music hm-input-icon" id="chord-drag-handle" draggable="true" aria-hidden="true" style="cursor: grab;" title="Arraste este ícone para o centro do mapa"></i>
+                    <input type="text" id="chord-input" placeholder="Ex: C, Dm7, G#maj7" value="" class="glass-input" autocomplete="off" spellcheck="false" aria-label="Digite a cifra do acorde">
                 </div>
-
-                <div id="chord-suggestions" class="hm-chord-suggestions" role="group" aria-label="Qualidades rápidas">
-                </div>
-
-                <p class="hm-section-label">Shapes (CAGED)</p>
 
                 <div id="chord-cards-container" class="hm-cards-scroll" role="list">
                     <div class="hm-empty-state">
@@ -118,11 +115,10 @@
             </aside>
 
             <!-- PAINEL CENTRAL (hm-panel removido) -->
-            <section class="hm-center" aria-label="Roda do Mapa de Intervalos">
+            <section class="hm-center" aria-label="Roda do Mapa Harmônico">
                 <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
-                    <h1 class="hm-main-title">Mapa de Intervalos</h1>
-                    <button id="btn-info" class="hm-icon-btn" title="Como funciona?"
-                        aria-label="Informações sobre o Mapa de Intervalos">
+                    <h1 class="hm-main-title">Mapa Harmônico</h1>
+                    <button id="btn-info" class="hm-icon-btn" title="Como funciona?" aria-label="Informações sobre o Mapa Harmônico">
                         <i class="fas fa-question" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -138,12 +134,10 @@
                     <div class="hm-control-group">
                         <label>Timbre</label>
                         <div class="hm-toggle-group" role="radiogroup" aria-label="Selecionar timbre">
-                            <button id="btn-timbre-guitar" class="hm-toggle-btn active" data-timbre="guitar"
-                                role="radio" aria-checked="true">
+                            <button id="btn-timbre-guitar" class="hm-toggle-btn active" data-timbre="guitar" role="radio" aria-checked="true">
                                 <i class="fas fa-guitar" style="margin-right:4px;" aria-hidden="true"></i>Violão
                             </button>
-                            <button id="btn-timbre-piano" class="hm-toggle-btn" data-timbre="piano" role="radio"
-                                aria-checked="false">
+                            <button id="btn-timbre-piano" class="hm-toggle-btn" data-timbre="piano" role="radio" aria-checked="false">
                                 <i class="fas fa-music" style="margin-right:4px;" aria-hidden="true"></i>Piano
                             </button>
                         </div>
@@ -151,28 +145,9 @@
 
                     <div class="hm-control-group">
                         <label>Aleatório</label>
-                        <button id="btn-random-root" class="hm-icon-btn" title="Tônica Aleatória"
-                            aria-label="Escolher tônica aleatória">
+                        <button id="btn-random-root" class="hm-icon-btn" title="Tônica Aleatória" aria-label="Escolher tônica aleatória">
                             <i class="fas fa-dice" aria-hidden="true"></i>
                         </button>
-                    </div>
-
-                    <!-- FALHA 2 CORRIGIDA: Controle visual de Afinações -->
-                    <div class="hm-control-group">
-                        <label for="tuning-select">Instrumento / Afinação</label>
-                        <select id="tuning-select" class="hm-tuning-select" aria-label="Selecionar instrumento e afinação">
-                            <optgroup label="🎸 Guitarra">
-                                <option value='["guitar","Standard (E A D G B E)"]' selected>Standard (E A D G B E)</option>
-                                <option value='["guitar","Drop D (D A D G B E)"]'>Drop D (D A D G B E)</option>
-                                <option value='["guitar","Half Step Down (Eb)"]'>Half Step Down (Eb)</option>
-                                <option value='["guitar","Full Step Down (D)"]'>Full Step Down (D)</option>
-                            </optgroup>
-                            <optgroup label="🎵 Baixo">
-                                <option value='["bass","Standard (E A D G)"]'>Standard (E A D G)</option>
-                                <option value='["bass","Drop D (D A D G)"]'>Drop D (D A D G)</option>
-                                <option value='["bass","5-string (B E A D G)"]'>5-string (B E A D G)</option>
-                            </optgroup>
-                        </select>
                     </div>
                 </div>
 
@@ -181,8 +156,7 @@
                     Escolha ou clique em uma tônica!
                 </div>
 
-                <div id="harmonic-wheel" class="hm-wheel-wrapper" role="group"
-                    aria-label="Roda dos intervalos harmônicos">
+                <div id="harmonic-wheel" class="hm-wheel-wrapper" role="group" aria-label="Roda dos intervalos harmônicos">
                     <svg id="harmonic-svg-lines" aria-hidden="true"></svg>
                     <div id="wheel-dropzone" class="hm-wheel-dropzone" aria-label="Solte o acorde aqui">
                         <span>Solte a tônica aqui</span>
@@ -195,8 +169,7 @@
                 <h2 class="hm-panel__title">Sua Progressão</h2>
                 <p class="hm-panel__subtitle">Arraste os shapes para cá</p>
 
-                <div id="progression-dropzone" class="hm-dropzone" role="region"
-                    aria-label="Área de montagem da progressão" aria-dropeffect="copy">
+                <div id="progression-dropzone" class="hm-dropzone" role="region" aria-label="Área de montagem da progressão" aria-dropeffect="copy">
                     <div class="hm-empty-state">Aguardando acordes...</div>
                 </div>
 
@@ -209,8 +182,7 @@
                     <button id="btn-export-midi" class="glass-btn btn-accent" title="Exportar como arquivo MIDI">
                         <i class="fas fa-file-export" aria-hidden="true"></i> MIDI
                     </button>
-                    <button id="btn-clear-progression" class="glass-btn btn-danger" title="Limpar progressão"
-                        aria-label="Limpar progressão">
+                    <button id="btn-clear-progression" class="glass-btn btn-danger" title="Limpar progressão" aria-label="Limpar progressão">
                         <i class="fas fa-trash" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -219,5 +191,4 @@
         </div>
     </main>
 </body>
-
 </html>

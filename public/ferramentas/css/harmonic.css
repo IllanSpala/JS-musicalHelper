@@ -4,16 +4,16 @@
  * ============================================================ */
 
 :root {
-    --hm-primary: #5b50d6;
-    --hm-primary-glow: rgba(91, 80, 214, 0.45);
-    --hm-panel-bg: rgba(255, 255, 255, 0.03);
-    --hm-panel-border: rgba(255, 255, 255, 0.07);
-    --hm-surface: rgba(255, 255, 255, 0.05);
+    --hm-primary:       #5b50d6;
+    --hm-primary-glow:  rgba(91, 80, 214, 0.45);
+    --hm-panel-bg:      rgba(255, 255, 255, 0.03);
+    --hm-panel-border:  rgba(255, 255, 255, 0.07);
+    --hm-surface:       rgba(255, 255, 255, 0.05);
     --hm-surface-hover: rgba(255, 255, 255, 0.09);
-    --hm-text-muted: rgba(255, 255, 255, 0.45);
-    --hm-radius-card: 14px;
-    --hm-radius-pill: 50px;
-    --hm-transition: 0.25s ease;
+    --hm-text-muted:    rgba(255, 255, 255, 0.45);
+    --hm-radius-card:   14px;
+    --hm-radius-pill:   50px;
+    --hm-transition:    0.25s ease;
 }
 
 body.hm-page {
@@ -39,7 +39,7 @@ body.hm-page main {
     gap: clamp(10px, 1.2vw, 22px);
     width: 100%;
     max-width: clamp(1100px, 88vw, 2000px);
-    height: clamp(500px, calc(100vh - 110px), 1080px);
+    height: clamp(500px, calc(100vh - 110px), 960px);
 }
 
 .hm-panel {
@@ -82,6 +82,8 @@ body.hm-page main {
     padding: clamp(16px, 2vh, 28px) clamp(16px, 2vw, 32px);
     position: relative;
     height: 100%;
+    width: 100%;
+    box-sizing: border-box;
     margin: 0 auto;
 }
 
@@ -100,13 +102,8 @@ body.hm-page main {
 }
 
 @keyframes hm-title-glow {
-    from {
-        filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4));
-    }
-
-    to {
-        filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6));
-    }
+    from { filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4)); }
+    to   { filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6)); }
 }
 
 .hm-controls-bar {
@@ -132,36 +129,6 @@ body.hm-page main {
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--hm-text-muted);
-}
-
-/* FALHA 2: Estilo do select de afinação */
-.hm-tuning-select {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--hm-panel-border);
-    border-radius: 8px;
-    color: #ccc;
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 5px 10px;
-    cursor: pointer;
-    outline: none;
-    transition: var(--hm-transition);
-    max-width: 180px;
-}
-
-.hm-tuning-select:hover,
-.hm-tuning-select:focus {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    background: rgba(91, 80, 214, 0.12);
-    box-shadow: 0 0 0 2px var(--hm-primary-glow);
-}
-
-.hm-tuning-select option,
-.hm-tuning-select optgroup {
-    background: #1a1a2e;
-    color: #ddd;
 }
 
 .hm-toggle-group {
@@ -248,8 +215,8 @@ body.hm-page main {
 
 .hm-wheel-wrapper {
     position: relative;
-    width: clamp(390px, 42vmin, 630px);
-    height: clamp(390px, 42vmin, 630px);
+    width: clamp(260px, 28vmin, 420px);
+    height: clamp(260px, 28vmin, 420px);
     flex-shrink: 0;
     margin: auto auto;
     display: flex;
@@ -296,7 +263,7 @@ body.hm-page main {
     color: rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0,0,0,0.4);
     padding: 6px 12px;
     border-radius: 20px;
     backdrop-filter: blur(4px);
@@ -318,10 +285,9 @@ body.hm-page main {
 
 .wheel-node {
     position: absolute;
-    width: clamp(60px, 6.3vmin, 96px);
-    height: clamp(60px, 6.3vmin, 96px);
-    /* transform-origin no centro próprio do elemento — sem margin hacks */
-    transform: translate(-50%, -50%);
+    width: clamp(40px, 4.2vmin, 64px);
+    height: clamp(40px, 4.2vmin, 64px);
+    /* Removido as margens negativas (margin-top/left) para o translate funcionar perfeito */
     border-radius: 50%;
     display: flex;
     flex-direction: column;
@@ -334,10 +300,10 @@ body.hm-page main {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     user-select: none;
     z-index: 2;
+    transform: translate(-50%, -50%); /* Ancoragem precisa pelo centro real do elemento */
 }
 
 .wheel-node:hover {
-    /* Preserva o translate(-50%,-50%) base ao aplicar o scale de hover */
     transform: translate(-50%, -50%) scale(1.18) !important;
     z-index: 10;
 }
@@ -356,26 +322,19 @@ body.hm-page main {
 }
 
 @keyframes hm-sustain-pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255, 255, 255, 0.08);
-    }
-
-    50% {
-        box-shadow: 0 0 32px var(--sustain-color, currentColor), inset 0 0 22px rgba(255, 255, 255, 0.16);
-    }
+    0%, 100% { box-shadow: 0 0 14px var(--sustain-color, currentColor), inset 0 0 12px rgba(255,255,255,0.08); }
+    50%       { box-shadow: 0 0 32px var(--sustain-color, currentColor), inset 0 0 22px rgba(255,255,255,0.16); }
 }
 
 .wheel-node-degree {
-    font-size: clamp(15px, 1.65vmin, 24px);
+    font-size: clamp(10px, 1.1vmin, 16px);
     font-weight: 800;
     line-height: 1;
     margin-bottom: 2px;
 }
 
 .wheel-node-note {
-    font-size: clamp(10px, 1.2vmin, 16px);
+    font-size: clamp(7px, 0.8vmin, 11px);
     font-weight: 600;
     opacity: 0.75;
     line-height: 1;
@@ -478,6 +437,31 @@ body.hm-page main {
     flex-shrink: 0;
 }
 
+.hm-theory-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.hm-theory-formula {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e0e0ff;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.hm-theory-desc {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #b0b0b0;
+}
+
 .hm-cards-scroll {
     flex: 1;
     overflow-y: auto;
@@ -489,14 +473,8 @@ body.hm-page main {
     padding-bottom: 4px;
 }
 
-.hm-cards-scroll::-webkit-scrollbar {
-    width: 4px;
-}
-
-.hm-cards-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
+.hm-cards-scroll::-webkit-scrollbar { width: 4px; }
+.hm-cards-scroll::-webkit-scrollbar-track { background: transparent; }
 .hm-cards-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
@@ -532,9 +510,7 @@ body.hm-page main {
     transform: translateY(-2px);
 }
 
-.chord-diagram-card:active {
-    cursor: grabbing;
-}
+.chord-diagram-card:active { cursor: grabbing; }
 
 .chord-diagram-card h4 {
     margin: 0 0 8px;
@@ -543,9 +519,7 @@ body.hm-page main {
     text-align: center;
 }
 
-.chord-svg {
-    background: transparent;
-}
+.chord-svg { background: transparent; }
 
 .hm-empty-state {
     text-align: center;
@@ -569,14 +543,8 @@ body.hm-page main {
     transition: border-color var(--hm-transition), background var(--hm-transition);
 }
 
-.hm-dropzone::-webkit-scrollbar {
-    width: 4px;
-}
-
-.hm-dropzone::-webkit-scrollbar-track {
-    background: transparent;
-}
-
+.hm-dropzone::-webkit-scrollbar { width: 4px; }
+.hm-dropzone::-webkit-scrollbar-track { background: transparent; }
 .hm-dropzone::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
@@ -602,9 +570,7 @@ body.hm-page main {
     flex-shrink: 0;
 }
 
-.hm-prog-card:hover {
-    background: var(--hm-surface-hover);
-}
+.hm-prog-card:hover { background: var(--hm-surface-hover); }
 
 .hm-prog-card__chord {
     flex: 1;
@@ -644,9 +610,7 @@ body.hm-page main {
     padding: 2px 4px;
 }
 
-.hm-prog-card__remove:hover {
-    color: #ff5555;
-}
+.hm-prog-card__remove:hover { color: #ff5555; }
 
 .hm-prog-summary {
     padding: 12px 14px;
@@ -678,13 +642,8 @@ body.hm-page main {
     font-weight: 700;
 }
 
-.hm-action-row .glass-btn.btn-danger {
-    color: #ff6666;
-}
-
-.hm-action-row .glass-btn.btn-accent {
-    color: #7fddff;
-}
+.hm-action-row .glass-btn.btn-danger { color: #ff6666; }
+.hm-action-row .glass-btn.btn-accent { color: #7fddff; }
 
 .chord-modal {
     position: fixed;
@@ -751,17 +710,13 @@ body.hm-page main {
         overflow-y: auto;
         align-items: flex-start;
     }
-
     .hm-stage {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
         height: auto;
         max-height: none;
     }
-
-    .hm-center {
-        order: -1;
-    }
+    .hm-center { order: -1; }
 }
 
 @media (min-width: 1920px) {
@@ -770,49 +725,22 @@ body.hm-page main {
         height: clamp(600px, calc(100vh - 120px), 1200px);
         gap: clamp(18px, 2vw, 32px);
     }
-
-    .hm-panel {
-        padding: clamp(20px, 2vh, 36px) clamp(16px, 1.6vw, 28px);
-        gap: clamp(14px, 1.5vh, 24px);
-    }
-
-    .hm-panel__title {
-        font-size: clamp(1.1rem, 1.2vw, 1.5rem);
-    }
-
-    .hm-main-title {
-        font-size: clamp(2rem, 2.8vw, 3.2rem);
-    }
-
+    .hm-panel { padding: clamp(20px, 2vh, 36px) clamp(16px, 1.6vw, 28px); gap: clamp(14px, 1.5vh, 24px); }
+    .hm-panel__title { font-size: clamp(1.1rem, 1.2vw, 1.5rem); }
+    .hm-main-title { font-size: clamp(2rem, 2.8vw, 3.2rem); }
     .hm-wheel-wrapper {
-        width: clamp(570px, 51vmin, 840px) !important;
-        height: clamp(570px, 51vmin, 840px) !important;
+        width: clamp(380px, 34vmin, 560px) !important;
+        height: clamp(380px, 34vmin, 560px) !important;
     }
-
     .wheel-node {
-        width: clamp(81px, 7.8vmin, 123px) !important;
-        height: clamp(81px, 7.8vmin, 123px) !important;
-        transform: translate(-50%, -50%) !important;
-        margin-top: 0 !important;
-        margin-left: 0 !important;
+        width: clamp(54px, 5.2vmin, 82px) !important;
+        height: clamp(54px, 5.2vmin, 82px) !important;
+        /* Removido as margins também da versão 4K */
     }
-
-    .wheel-node-degree {
-        font-size: clamp(19px, 2.1vmin, 30px) !important;
-    }
-
-    .wheel-node-note {
-        font-size: clamp(13px, 1.5vmin, 19px) !important;
-    }
-
-    .hm-wheel-guide {
-        font-size: clamp(0.9rem, 1vw, 1.1rem);
-        max-width: clamp(440px, 36vw, 600px);
-    }
-
-    .hm-controls-bar {
-        gap: clamp(20px, 2.5vw, 40px);
-    }
+    .wheel-node-degree { font-size: clamp(13px, 1.4vmin, 20px) !important; }
+    .wheel-node-note   { font-size: clamp(9px, 1vmin, 13px) !important; }
+    .hm-wheel-guide { font-size: clamp(0.9rem, 1vw, 1.1rem); max-width: clamp(440px, 36vw, 600px); }
+    .hm-controls-bar { gap: clamp(20px, 2.5vw, 40px); }
 }
 
 .fretboard-fade .fret-cell .note-dot:not(.active-chord-note) {
@@ -827,19 +755,12 @@ body.hm-page main {
     border: 2px solid #fff;
 }
 
-.custom-scroll::-webkit-scrollbar {
-    width: 5px;
-}
-
-.custom-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
+.custom-scroll::-webkit-scrollbar { width: 5px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
 .custom-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 10px;
 }
-
 .custom-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
@@ -848,6 +769,15 @@ body.hm-page main {
     position: fixed;
     z-index: 999999;
     pointer-events: auto;
+    width: 280px;
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.chord-hover-tooltip__inner {
     background: rgba(18, 18, 28, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(14px);
@@ -856,62 +786,16 @@ body.hm-page main {
     border-radius: 12px;
     padding: 14px;
     color: #fff;
-    width: 270px;
-    max-width: calc(100vw - 20px);
-    box-sizing: border-box;
-    opacity: 0;
-    transform: scale(0.96);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: auto;
 }
 
-.chord-hover-tooltip.show {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.chord-hover-tooltip h3 {
-    margin: 0 0 10px;
-    font-size: 1.2rem;
-    color: var(--hm-primary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 5px;
-}
-
-.chord-hover-tooltip .tooltip-section {
-    margin-bottom: 12px;
-}
-
-.chord-hover-tooltip .tooltip-label {
-    font-size: 0.75rem;
-    color: #aaa;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-    display: block;
-}
-
-.chord-hover-tooltip .tooltip-notes {
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.chord-hover-tooltip .tooltip-note-badge {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.chord-hover-tooltip .tooltip-suggestions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
+.chord-hover-tooltip.show { opacity: 1; transform: scale(1); }
+.chord-hover-tooltip h3 { margin: 0 0 10px; font-size: 1.2rem; color: var(--hm-primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+.chord-hover-tooltip .tooltip-section { margin-bottom: 12px; }
+.chord-hover-tooltip .tooltip-label { font-size: 0.75rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
+.chord-hover-tooltip .tooltip-notes { font-size: 0.9rem; font-weight: 500; letter-spacing: 0.5px; display: flex; gap: 6px; flex-wrap: wrap; }
+.chord-hover-tooltip .tooltip-note-badge { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+.chord-hover-tooltip .tooltip-suggestions { display: flex; gap: 6px; flex-wrap: wrap; }
 .chord-hover-tooltip .tooltip-suggestion-badge {
     background: rgba(91, 80, 214, 0.25);
     border: 1px solid rgba(91, 80, 214, 0.6);
@@ -924,54 +808,10 @@ body.hm-page main {
     transition: all 0.2s ease;
     user-select: none;
 }
-
 .chord-hover-tooltip .tooltip-suggestion-badge:hover {
     background: rgba(91, 80, 214, 0.75);
     color: #ffffff;
     border-color: #7c6ff7;
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 0 12px rgba(124, 111, 247, 0.5);
-}
-
-/* ─── Theory Box ──────────────────────────────────────────────────────────── */
-.hm-theory-box {
-    background: rgba(0, 0, 0, 0.28);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 2px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    animation: hm-theory-fadein 0.22s ease;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-@keyframes hm-theory-fadein {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.hm-theory-formula {
-    display: inline-block;
-    font-family: 'Space Grotesk', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--hm-primary, #5b50d6);
-    background: rgba(91, 80, 214, 0.12);
-    border: 1px solid rgba(91, 80, 214, 0.25);
-    border-radius: 6px;
-    padding: 2px 8px;
-    text-transform: uppercase;
-    align-self: flex-start;
-}
-
-.hm-theory-desc {
-    margin: 0;
-    font-size: 0.76rem;
-    line-height: 1.55;
-    color: rgba(255, 255, 255, 0.55);
 }

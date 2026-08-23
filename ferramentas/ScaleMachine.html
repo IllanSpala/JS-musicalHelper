@@ -156,7 +156,41 @@
                 </div>
             </div>
             
-            <div id="scale-info-panel" class="bottom-panel"></div>
+            <!-- ═══════════════════════════════════════════════════════════
+                 LEARN MODAL — Interface full-viewport de 3 painéis
+                 Abre ao clicar em "Sobre a Escala"
+                 ═══════════════════════════════════════════════════════════ -->
+            <div id="learn-modal" class="learn-overlay hidden"
+                 role="dialog" aria-modal="true" aria-labelledby="learn-modal-title">
+                <div class="learn-shell">
+
+                    <!-- Cabeçalho -->
+                    <div class="learn-header">
+                        <h2 id="learn-modal-title" class="learn-title-text"></h2>
+                        <button id="learn-close-btn" class="learn-close" aria-label="Fechar modal">✕</button>
+                    </div>
+
+                    <!-- Grade principal: Diagrama | Exercícios | Teoria -->
+                    <div class="learn-grid">
+
+                        <!-- PAINEL A — Diagrama visual da escala -->
+                        <section class="learn-panel learn-panel--diagram" aria-label="Diagrama da escala">
+                            <p class="learn-panel-label">Diagrama</p>
+                            <div id="learn-diagram-root" class="learn-diagram-area">
+                                <!-- Mini-fretboard ou círculo de notas injetado via JS -->
+                            </div>
+                            <div id="learn-notes-chips" class="learn-notes-chips"></div>
+                        </section>
+
+                        <!-- PAINEL B — Elucidações teóricas -->
+                        <section class="learn-panel learn-panel--theory" aria-label="Teoria">
+                            <p class="learn-panel-label">Teoria</p>
+                            <div id="learn-theory-area" class="learn-theory-scroll"></div>
+                        </section>
+
+                    </div><!-- /learn-grid -->
+                </div><!-- /learn-shell -->
+            </div><!-- /learn-modal -->
         </div>
     </main>
 

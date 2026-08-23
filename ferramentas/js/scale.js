@@ -927,35 +927,157 @@ function updateChugLabel() {
     label.textContent = `${stringName} ${chugNote}`;
 }
 
-// --- SCALE INFO (offline) ---
+// --- LEARN MODAL: Aprender mais sobre a escala ---
 function initScaleInfo() {
-    const btn   = document.getElementById('scale-info-btn');
-    const panel = document.getElementById('scale-info-panel');
-
+    const btn = document.getElementById('scale-info-btn');
     btn.addEventListener('click', () => {
-        if (panel.classList.contains('open')) {
-            panel.classList.remove('open');
-            return;
-        }
-        
-        panel.classList.add('open');
-        
-        const fn   = SCALE_INFO[state.scaleName];
-        const text = fn ? fn(state.root) : `Escala ${state.root} ${SCALE_NAMES[state.scaleName]}.`;
-        const paragraphs = text.trim().split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
-        
-        const langVar = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
-        const closeBtnTxt = translations[langVar]['btn_close'];
+        const modal = document.getElementById('learn-modal');
+        modal.classList.remove('hidden');
+        _renderLearnModal();
+    });
 
-        panel.innerHTML = `<div class="info-content">
-            <h3 class="info-title">${state.root} ${SCALE_NAMES[state.scaleName]}</h3>
-            <div class="info-text">${paragraphs}</div>
-            <button class="info-close" id="info-close-btn">${closeBtnTxt}</button>
-        </div>`;
-        document.getElementById('info-close-btn').addEventListener('click', () => {
-            panel.classList.remove('open');
+    // Fecha pelo botão ✕
+    document.getElementById('learn-close-btn').addEventListener('click', () => {
+        document.getElementById('learn-modal').classList.add('hidden');
+    });
+
+    // Fecha clicando no backdrop (fora do shell)
+    document.getElementById('learn-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            document.getElementById('learn-modal').classList.add('hidden');
+        }
+    });
+
+    // ESC fecha o modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const m = document.getElementById('learn-modal');
+            if (!m.classList.contains('hidden')) m.classList.add('hidden');
+        }
+    });
+}
+
+function _renderLearnModal() {
+    const rootSemi  = getRootSemitone(state.root);
+    const scaleNotes = getScaleNotes(state.root, state.scaleName);
+    const scaleName  = SCALE_NAMES[state.scaleName];
+    const langVar    = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
+
+    // Título do modal
+    document.getElementById('learn-modal-title').textContent =
+        `${state.root} ${scaleName}`;
+
+    // ── PAINEL A: Diagrama ────────────────────────────────────────
+    _renderLearnDiagram(scaleNotes, rootSemi);
+
+
+    // ── PAINEL C: Teoria ─────────────────────────────────────────
+    _renderLearnTheory(scaleNotes, scaleName, langVar);
+}
+
+// Painel A — mini-fretboard (5 trastes, cordas do instrumento atual)
+function _renderLearnDiagram(scaleNotes, rootSemi) {
+    const diagramEl = document.getElementById('learn-diagram-root');
+    const chipsEl   = document.getElementById('learn-notes-chips');
+    if (!diagramEl || !chipsEl) return;
+
+    const scaleMap = {};
+    scaleNotes.forEach(n => { scaleMap[n.semitone] = n; });
+
+    // Strings do instrumento atual (primeiras 6, do agudo para o grave para display)
+    const tuning  = TUNINGS[state.instrument][state.tuningName];
+    const strings = [...tuning].reverse().slice(0, 6);
+    const FRETS   = 7; // trastes visíveis no mini-fretboard
+
+    let html = '<div class="learn-mini-fretboard">';
+    strings.forEach((openMidi, si) => {
+        const stringNum = strings.length - si;
+        html += `<div class="learn-mini-string">
+            <span class="learn-mini-label">${stringNum}</span>
+            <div class="learn-mini-cells">
+                <div class="learn-mini-string-line"></div>`;
+        for (let f = 0; f <= FRETS; f++) {
+            const midi     = openMidi + f;
+            const semi     = midi % 12;
+            const match    = scaleMap[semi];
+            const isRoot   = semi === rootSemi;
+            const cellClass = match
+                ? (isRoot ? 'learn-mini-cell is-root has-note' : 'learn-mini-cell has-note')
+                : 'learn-mini-cell';
+            const noteLabel = match ? match.note : '';
+            html += `<div class="${cellClass}" data-midi="${midi}" title="${noteLabel} (traste ${f})">${noteLabel}</div>`;
+        }
+        html += '</div></div>';
+    });
+    html += '</div>';
+    diagramEl.innerHTML = html;
+
+    // Click nas células para tocar nota
+    diagramEl.querySelectorAll('.learn-mini-cell.has-note').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const m = parseInt(cell.dataset.midi);
+            if (!isNaN(m) && typeof playNote === 'function') playNote(m);
         });
     });
+
+    // Chips de notas
+    chipsEl.innerHTML = scaleNotes.map((n, i) => {
+        const isRoot = i === 0;
+        let midi = 48 + n.semitone;
+        if (n.semitone < rootSemi) midi += 12;
+        return `<div class="learn-chip${isRoot ? ' is-root' : ''}" data-midi="${midi}" title="${n.intervalName}"  tabindex="0">
+            <span class="learn-chip-note">${n.note}</span>
+            <span class="learn-chip-deg">${n.degree}</span>
+        </div>`;
+    }).join('');
+
+    chipsEl.querySelectorAll('.learn-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const m = parseInt(chip.dataset.midi);
+            if (!isNaN(m) && typeof playNote === 'function') playNote(m);
+        });
+    });
+}
+
+
+// Painel C — teoria: texto da SCALE_INFO + tabela de intervalos
+function _renderLearnTheory(scaleNotes, scaleName, langVar) {
+    const el = document.getElementById('learn-theory-area');
+    if (!el) return;
+
+    const fn   = SCALE_INFO[state.scaleName];
+    const text = fn ? fn(state.root) : `${state.root} ${scaleName}.`;
+    const paragraphs = text.trim().split('\n\n')
+        .map(p => `<p>${p.trim()}</p>`)
+        .join('');
+
+    // Tabela de graus e intervalos
+    const tableRows = scaleNotes.map((n, i) => {
+        const det = INTERVAL_DETAIL[n.degree] || { char: n.degree, txt: n.intervalName };
+        const rowBg = i === 0
+            ? 'background:rgba(var(--accent-b-rgb,214,184,156),0.12);'
+            : 'background:rgba(255,255,255,0.03);';
+        return `<tr style="${rowBg} border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 10px; font-weight:700; font-size:1rem; color:rgba(255,255,255,0.9); width:44px; text-align:center;">${n.note}</td>
+            <td style="padding:7px 10px; font-size:0.75rem; color:rgba(255,255,255,0.45); width:38px;">${n.degree}</td>
+            <td style="padding:7px 10px; font-size:0.78rem; color:rgba(255,255,255,0.62);">${n.intervalName}</td>
+            <td style="padding:7px 10px; font-size:0.72rem; color:rgba(255,255,255,0.38); font-style:italic;">${det.char || ''}</td>
+        </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+        <h3>${state.root} ${scaleName}</h3>
+        ${paragraphs}
+        <table style="width:100%; border-collapse:collapse; margin-top:16px;">
+            <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                <th style="padding:6px 10px; font-size:0.58rem; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:700; text-align:left;">Nota</th>
+                <th style="padding:6px 10px; font-size:0.58rem; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:700; text-align:left;">Grau</th>
+                <th style="padding:6px 10px; font-size:0.58rem; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:700; text-align:left;">Intervalo</th>
+                <th style="padding:6px 10px; font-size:0.58rem; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.25); font-weight:700; text-align:left;">Característica</th>
+            </tr></thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+    `;
 }
 
 // --- SELECTS ---
@@ -1020,7 +1142,7 @@ function initControls() {
         state.scaleName = e.target.value; expandedDegree = null;
         state._customMidis = null;
         
-        document.getElementById('scale-info-panel').classList.remove('open');
+        document.getElementById('learn-modal').classList.add('hidden');
         renderFretboard();
     });
 
@@ -1063,7 +1185,7 @@ function initControls() {
             
             expandedDegree = null;
             state._customMidis = null;
-            document.getElementById('scale-info-panel').classList.remove('open');
+            document.getElementById('learn-modal').classList.add('hidden');
             renderFretboard();
         });
     }
@@ -1133,7 +1255,7 @@ window.addEventListener('languageChanged', () => {
     const lang = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
     const pbtn = document.getElementById('practice-btn');
     if (pbtn) pbtn.textContent = lang === 'en' ? '🎯 Practice Scale' : '🎯 Praticar Escala';
-    document.getElementById('scale-info-panel').classList.remove('open');
+    document.getElementById('learn-modal').classList.add('hidden');
     document.getElementById('practice-overlay').classList.add('hidden');
 });
 
