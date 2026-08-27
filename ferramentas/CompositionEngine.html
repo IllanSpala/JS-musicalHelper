@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Motor de Composição Procedural — árvore harmônica interativa com voice leading e CAGED. JoJoTools.">
+    <title>Motor de Composição — JoJoTools</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/composition-engine.css">
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/jj-store.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body class="ce-page">
+
+<!-- HEADER -->
+<header class="glass-header">
+    <a href="../index.html" class="logo" aria-label="Voltar à página inicial">JoJoTools</a>
+    <nav class="center-links" aria-label="Ferramentas">
+        <a href="PolyMetro.html">Metrônomo Polirrítmico</a>
+        <a href="ScaleMachine.html">Escalas</a>
+        <a href="TabPlayer.html">Tablatura</a>
+        <a href="HarmonicMap.html">Mapa Harmônico</a>
+        <a href="CompositionEngine.html" aria-current="page">Motor de Composição</a>
+    </nav>
+    <nav style="display:flex;align-items:center;gap:14px;" aria-label="Conta">
+        <a class="github-link" href="https://github.com/IllanSpala" target="_blank" rel="noopener noreferrer"
+           aria-label="GitHub" style="color:white;text-decoration:none;font-size:1.2rem;">
+            <i class="fab fa-github"></i>
+        </a>
+        <a href="login.html" id="auth-login-btn" class="glass-btn small-btn" style="font-size:.8rem;padding:7px 16px;">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+        <div id="auth-user-chip" class="auth-chip tp-hidden" onclick="window.location.href='profile.html'" style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <img id="auth-avatar" src="" alt="Avatar" class="chip-avatar">
+            <span id="auth-username" class="chip-name"></span>
+        </div>
+    </nav>
+</header>
+
+<!-- HELP MODAL -->
+<div id="ce-modal" class="ce-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ce-modal-title">
+    <div class="ce-modal-box">
+        <h3 id="ce-modal-title"><i class="fas fa-info-circle"></i> Como funciona o Motor de Composição</h3>
+
+        <div class="ce-modal-section">
+            <p style="font-size:.82rem;color:rgba(255,255,255,.65);margin:0;line-height:1.6;">
+                Cada bolha é um <strong style="color:#fff">acorde sugerido</strong>. Clique nela para avançar a composição —
+                ela vira o novo centro e gera novas sugestões à frente.
+            </p>
+        </div>
+
+        <div class="ce-modal-section">
+            <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin:0 0 6px;">Cores das Rotas</p>
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.5)"></div>
+                <p><strong>Resolução</strong> — Dominante → Tônica. 4ª ascendente, V7→I. Movimento de maior gravidade tonal.</p>
+            </div>
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#f97316;box-shadow:0 0 8px rgba(249,115,22,.5)"></div>
+                <p><strong>Tensão / Empréstimo</strong> — Acordes do modo paralelo (bVI, bVII), Napolitano (bII) e Trítono Sub. Saída da tonalidade.</p>
+            </div>
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#38bdf8;box-shadow:0 0 8px rgba(56,189,248,.5)"></div>
+                <p><strong>Retenção de Voz</strong> — 2+ notas comuns entre acordes. O voice leading mais suave possível.</p>
+            </div>
+        </div>
+
+        <div class="ce-modal-section">
+            <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin:0 0 6px;">Linhas Conectoras</p>
+            <div class="ce-modal-row">
+                <div class="ce-modal-line-sample" style="background:#22c55e;height:4px"></div>
+                <p><strong>Grossa e sólida</strong> — VL Score baixo (≤3). Vozes se movem por semitom. Transição suave.</p>
+            </div>
+            <div class="ce-modal-row">
+                <div class="ce-modal-line-sample dashed"></div>
+                <p><strong>Fina e tracejada</strong> — VL Score alto (≥8). Saltos de quarta ou mais. Transição abrupta.</p>
+            </div>
+            <div class="ce-modal-row">
+                <i class="fas fa-guitar" style="color:#a78bfa;font-size:1rem;flex-shrink:0"></i>
+                <p><strong>VL Score</strong> — Voice Leading Score: soma dos menores deslocamentos em semitons entre as vozes de dois acordes consecutivos.</p>
+            </div>
+        </div>
+
+        <div class="ce-modal-section" style="font-size:.78rem;color:rgba(255,255,255,.5)">
+            <p style="margin:0"><strong style="color:#fff">Navegação:</strong> Arraste o fundo para mover o mapa · Scroll para zoom · Passe o mouse nas bolhas para ouvir e ver o shape CAGED</p>
+        </div>
+
+        <button id="ce-modal-close" class="ce-modal-close">Entendido</button>
+    </div>
+</div>
+
+<!-- MOBILE SIDEBAR TOGGLE -->
+<button class="ce-sidebar-toggle-mobile" id="ce-mobile-toggle" aria-label="Abrir painel lateral">
+    <i class="fas fa-sliders-h"></i>
+</button>
+
+<!-- APP SHELL -->
+<div class="ce-app-shell">
+
+    <!-- ASIDE — Configurações -->
+    <aside class="ce-sidebar" id="ce-sidebar" aria-label="Configurações do Motor de Composição">
+
+        <!-- Collapser desktop -->
+        <button class="ce-sidebar-collapser" id="ce-collapser" aria-label="Recolher painel">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="ce-sidebar-content">
+            <h2 class="ce-sidebar-title">
+                <i class="fas fa-brain"></i> Motor de Composição
+            </h2>
+
+            <!-- Tonalidade + Botão Aleatório -->
+            <div class="ce-control-group">
+                <label class="ce-control-label" for="ce-root-select">
+                    <i class="fas fa-music"></i> Tonalidade
+                </label>
+                <div class="ce-random-row">
+                    <select id="ce-root-select" class="ce-select" aria-label="Nota raiz">
+                        <option value="C">C</option><option value="C#">C# / Db</option>
+                        <option value="D">D</option><option value="D#">D# / Eb</option>
+                        <option value="E">E</option><option value="F">F</option>
+                        <option value="F#">F# / Gb</option><option value="G">G</option>
+                        <option value="G#">G# / Ab</option><option value="A">A</option>
+                        <option value="A#">A# / Bb</option><option value="B">B</option>
+                    </select>
+                    <button id="ce-btn-random" class="ce-btn-random" title="Ponto de partida aleatório" aria-label="Acorde diatônico aleatório">
+                        <i class="fas fa-dice"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modo -->
+            <div class="ce-control-group">
+                <label class="ce-control-label" for="ce-mode-select">
+                    <i class="fas fa-layer-group"></i> Modo
+                </label>
+                <select id="ce-mode-select" class="ce-select">
+                    <option value="major">Maior (Jônico)</option>
+                    <option value="minor">Menor Natural (Eólio)</option>
+                    <option value="dorian">Dórico</option>
+                    <option value="mixolydian">Mixolídio</option>
+                    <option value="lydian">Lídio</option>
+                    <option value="phrygian">Frígio</option>
+                    <option value="locrian">Lócrio</option>
+                </select>
+            </div>
+
+            <!-- BPM -->
+            <div class="ce-control-group">
+                <label class="ce-control-label" for="ce-bpm-slider">
+                    <i class="fas fa-tachometer-alt"></i> BPM: <span id="ce-bpm-value">90</span>
+                </label>
+                <input type="range" id="ce-bpm-slider" class="ce-slider" min="40" max="240" value="90" step="1">
+                <div class="ce-bpm-labels"><span>Lento</span><span>Médio</span><span>Rápido</span></div>
+            </div>
+
+            <!-- Qualidade -->
+            <div class="ce-control-group">
+                <label class="ce-control-label" for="ce-quality-select">
+                    <i class="fas fa-adjust"></i> Tipo de Acorde
+                </label>
+                <select id="ce-quality-select" class="ce-select">
+                    <option value="maj7">Maj7</option>
+                    <option value="7">Dominante 7</option>
+                    <option value="m7">m7</option>
+                    <option value="m7b5">m7b5</option>
+                    <option value="dim7">dim7</option>
+                    <option value="maj">Tríade Maior</option>
+                    <option value="min">Tríade Menor</option>
+                </select>
+            </div>
+
+            <!-- Rotas -->
+            <div class="ce-control-group">
+                <label class="ce-control-label"><i class="fas fa-project-diagram"></i> Rotas Visíveis</label>
+                <div class="ce-toggle-list" role="group">
+                    <label class="ce-toggle-item">
+                        <input type="checkbox" id="ce-route-resolution" checked>
+                        <span class="ce-toggle-dot ce-dot-green"></span> Resolução
+                    </label>
+                    <label class="ce-toggle-item">
+                        <input type="checkbox" id="ce-route-tension" checked>
+                        <span class="ce-toggle-dot ce-dot-orange"></span> Tensão / Empréstimo
+                    </label>
+                    <label class="ce-toggle-item">
+                        <input type="checkbox" id="ce-route-voice" checked>
+                        <span class="ce-toggle-dot ce-dot-blue"></span> Retenção de Voz
+                    </label>
+                </div>
+            </div>
+
+            <!-- Progressão -->
+            <div class="ce-control-group">
+                <label class="ce-control-label"><i class="fas fa-history"></i> Progressão Atual</label>
+                <div id="ce-history-list" class="ce-history-list" aria-live="polite">
+                    <p class="ce-history-empty">Nenhum acorde ainda.</p>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="ce-action-buttons">
+                <button id="ce-btn-play" class="ce-btn ce-btn-primary" aria-label="Tocar progressão">
+                    <i class="fas fa-play"></i> Tocar
+                </button>
+                <button id="ce-btn-reset" class="ce-btn ce-btn-danger" aria-label="Resetar mapa">
+                    <i class="fas fa-redo"></i> Resetar
+                </button>
+            </div>
+
+            <!-- Legenda -->
+            <div class="ce-legend">
+                <p class="ce-legend-title">Legenda das Conexões</p>
+                <div class="ce-legend-item"><span class="ce-legend-line ce-line-green" style="height:4px"></span><span>VL suave (grossa)</span></div>
+                <div class="ce-legend-item"><span class="ce-legend-line ce-line-dashed"></span><span>Salto abrupto (tracejada)</span></div>
+                <div class="ce-legend-item"><span class="ce-legend-dot" style="background:#22c55e"></span><span>Resolução</span></div>
+                <div class="ce-legend-item"><span class="ce-legend-dot" style="background:#f97316"></span><span>Tensão / Empréstimo</span></div>
+                <div class="ce-legend-item"><span class="ce-legend-dot" style="background:#38bdf8"></span><span>Retenção de Voz</span></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile overlay to close sidebar on outside click -->
+    <div id="ce-mobile-overlay" class="ce-mobile-overlay"></div>
+
+    <!-- MAIN — Grafo -->
+    <main class="ce-canvas-area" id="ce-canvas-area" aria-label="Grafo harmônico">
+
+        <!-- Título flutuante -->
+        <div class="ce-canvas-header" aria-hidden="true">
+            <h1 class="ce-canvas-title">Motor de Composição</h1>
+            <p class="ce-canvas-subtitle">Clique na bolha central para definir o acorde inicial</p>
+        </div>
+        <!-- Contagem de nós -->
+        <div id="ce-node-counter" class="ce-node-counter">0 acordes</div>
+
+        <!-- Help button -->
+        <button class="ce-help-btn" id="ce-help-btn" aria-label="Ajuda — como funciona">
+            <i class="fas fa-question"></i>
+        </button>
+
+        <!-- Zoom controls -->
+        <div class="ce-canvas-controls">
+            <button class="ce-zoom-btn" id="ce-zoom-in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
+            <button class="ce-zoom-btn" id="ce-zoom-reset" aria-label="Resetar zoom"><i class="fas fa-compress-arrows-alt"></i></button>
+            <button class="ce-zoom-btn" id="ce-zoom-out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
+        </div>
+
+        <!-- Viewport (pan/zoom transform applied here) -->
+        <div id="ce-viewport">
+            <!-- SVG connector lines -->
+            <svg id="ce-svg-layer" class="ce-svg-layer" aria-hidden="true" overflow="visible"></svg>
+            <!-- Bubble nodes -->
+            <div id="ce-graph-container" class="ce-graph-container" role="group" aria-label="Nós do grafo harmônico"></div>
+        </div>
+
+        <!-- CAGED Tooltip -->
+        <div id="ce-caged-tooltip" class="ce-caged-tooltip" role="tooltip">
+            <div class="ce-caged-inner">
+                <div class="ce-tooltip-chord-name" id="ce-tt-chord"></div>
+                <div class="ce-tooltip-notes" id="ce-tt-notes"></div>
+                <div class="ce-tooltip-route" id="ce-tt-route"></div>
+                <div class="ce-tooltip-vl" id="ce-tt-vl"></div>
+                <div class="ce-caged-label">Shape CAGED — Violão</div>
+                <svg id="ce-caged-svg" class="ce-caged-svg" width="160" height="130"></svg>
+                <div class="ce-caged-nav">
+                    <button class="ce-caged-nav-btn" id="ce-caged-prev" aria-label="Shape anterior">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="ce-caged-nav-label" id="ce-caged-letter">C</span>
+                    <button class="ce-caged-nav-btn" id="ce-caged-next" aria-label="Próximo shape">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start hint -->
+        <div id="ce-start-hint" class="ce-start-hint" aria-live="polite">
+            <div class="ce-start-hint-icon"><i class="fas fa-atom fa-spin"></i></div>
+            <p>Selecione a tonalidade e clique em <strong>"Resetar"</strong> para iniciar.</p>
+        </div>
+    </main>
+</div>
+
+<script src="js/music-theory.js" defer></script>
+<script src="js/composition-engine.js" defer></script>
+</body>
+</html>

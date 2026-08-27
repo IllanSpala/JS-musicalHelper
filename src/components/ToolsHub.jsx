@@ -42,6 +42,16 @@ const TOOLS = [
     tag: 'SYS.02',
     color: '#7B61FF',
   },
+  {
+    id: 'composition-engine',
+    label: 'Motor de Composição',
+    shortLabel: 'Composição',
+    desc: 'Construa progressões harmoniosas e procedurais em uma teia interativa.',
+    icon: '✦',
+    href: './ferramentas/CompositionEngine.html',
+    tag: 'SYS.05',
+    color: '#A78BFA',
+  },
 ];
 
 /* ─── Individual Card ─── */
@@ -272,7 +282,7 @@ export default function ToolsHub() {
           letterSpacing: '2px',
           textTransform: 'uppercase',
         }}>
-          SYSTEM OPERATIONAL — 4 MODULES ONLINE
+          SYSTEM OPERATIONAL — 5 MODULES ONLINE
         </span>
 
         <style>{`
