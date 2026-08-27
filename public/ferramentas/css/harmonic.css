@@ -88,22 +88,14 @@ body.hm-page main {
 }
 
 .hm-main-title {
-    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
-    font-weight: 900;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    font-weight: 800;
     letter-spacing: -1px;
     margin: 0;
     text-align: center;
-    background: linear-gradient(135deg, #7c6ff7 0%, #d92bb8 50%, #eb2f70 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: hm-title-glow 4s ease-in-out infinite alternate;
+    color: #fff;
+    opacity: 0.9;
     flex-shrink: 0;
-}
-
-@keyframes hm-title-glow {
-    from { filter: drop-shadow(0 0 8px rgba(91, 80, 214, 0.4)); }
-    to   { filter: drop-shadow(0 0 20px rgba(217, 43, 184, 0.6)); }
 }
 
 .hm-controls-bar {
