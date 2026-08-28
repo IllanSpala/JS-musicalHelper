@@ -781,6 +781,9 @@ $mobileOverlay && $mobileOverlay.addEventListener('click', closeMobileSidebar);
 
 // Help modal
 document.getElementById('ce-help-btn').addEventListener('click', () => $modal.classList.add('active'));
+document.querySelectorAll('.ce-help-trigger').forEach(el => {
+    el.addEventListener('click', () => $modal.classList.add('active'));
+});
 document.getElementById('ce-modal-close').addEventListener('click', () => $modal.classList.remove('active'));
 $modal.addEventListener('click', e => { if (e.target === $modal) $modal.classList.remove('active'); });
 

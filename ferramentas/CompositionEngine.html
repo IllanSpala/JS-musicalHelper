@@ -91,6 +91,18 @@
             </div>
         </div>
 
+        <div class="ce-modal-section">
+            <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin:0 0 6px;">Parâmetros da Teia</p>
+            <div class="ce-modal-row">
+                <i class="fas fa-layer-group" style="color:#a78bfa;font-size:1rem;flex-shrink:0"></i>
+                <p><strong>Modo</strong> — Define a tonalidade base. Ao alterar, os caminhos gerados refletem as progressões daquele modo diatônico.</p>
+            </div>
+            <div class="ce-modal-row">
+                <i class="fas fa-adjust" style="color:#a78bfa;font-size:1rem;flex-shrink:0"></i>
+                <p><strong>Tipo de Acorde</strong> — Converte dinamicamente toda a cena harmônica para a densidade escolhida (Tríades simples, 7ªs ou Extensões).</p>
+            </div>
+        </div>
+
         <div class="ce-modal-section" style="font-size:.78rem;color:rgba(255,255,255,.5)">
             <p style="margin:0"><strong style="color:#fff">Navegação:</strong> Arraste o fundo para mover o mapa · Scroll para zoom · Passe o mouse nas bolhas para ouvir e ver o shape CAGED</p>
         </div>
@@ -144,7 +156,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-mode-select">
                     <i class="fas fa-layer-group"></i> Modo
-                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Define o contexto tonal das progressões. Altera os vizinhos gerados (ex: no Menor Natural, a Subdominante vira menor e a relativa muda)."></i>
+                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
                 </label>
                 <select id="ce-mode-select" class="ce-select">
                     <option value="major">Maior (Jônico)</option>
@@ -170,7 +182,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-quality-select">
                     <i class="fas fa-adjust"></i> Tipo de Acorde
-                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Define a densidade (Tríade, Tétrade, etc). Ao alterar, converte toda a teia visual imediatamente para a nova complexidade."></i>
+                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
                 </label>
                 <select id="ce-quality-select" class="ce-select">
                     <optgroup label="Tríades">
@@ -200,7 +212,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label">
                     <i class="fas fa-project-diagram"></i> Rotas Visíveis
-                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Verde (Resolução): Movimentos fortes de cadência.&#10;Laranja (Tensão): Empréstimos e dominantes temporários.&#10;Azul (Voice Leading): Transições mantendo notas em comum."></i>
+                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
                 </label>
                 <div class="ce-toggle-list" role="group">
                     <label class="ce-toggle-item">
