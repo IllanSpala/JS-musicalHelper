@@ -213,9 +213,19 @@ function runSimStep() {
     // Isso cria "múltiplas teias procedurais" preservando a posição das gerações anteriores
     n.forEach(nd => {
         if (nd.type === 'main' || nd.type === 'history' || nd.isPath) return;
+        
         nd.vx = (nd.vx + nd.fx) * SIM.DAMP;
         nd.vy = (nd.vy + nd.fy) * SIM.DAMP;
+
+        // Limita a velocidade máxima para evitar que as bolhas "explodam" para fora da tela
+        const currentSpeed = Math.sqrt(nd.vx*nd.vx + nd.vy*nd.vy);
+        if (currentSpeed > 40) {
+            nd.vx = (nd.vx / currentSpeed) * 40;
+            nd.vy = (nd.vy / currentSpeed) * 40;
+        }
+
         nd.x += nd.vx; nd.y += nd.vy;
+        
         const speed = Math.sqrt(nd.vx*nd.vx + nd.vy*nd.vy);
         if (speed > maxV) maxV = speed;
         if (nd.el) { nd.el.style.left = `${nd.x}px`; nd.el.style.top = `${nd.y}px`; }
@@ -488,16 +498,15 @@ function spawnSuggestions(parent) {
     });
     if (!suggs.length) return;
 
-    // Place children randomly around parent to let physics resolve positions
-    const R = 240;
+    // Place children closely around parent so they expand outward through the gaps like a gas
+    const R = 40;
     suggs.forEach((sug, i) => {
         const angle = (i / suggs.length) * Math.PI * 2;
-        const jitter = (Math.random() - .5) * 40;
         const nd = {
             id: S.nextId++,
-            x: parent.x + (R + jitter) * Math.cos(angle),
-            y: parent.y + (R + jitter) * Math.sin(angle),
-            vx: 0, vy: 0,
+            x: parent.x + R * Math.cos(angle),
+            y: parent.y + R * Math.sin(angle),
+            vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15,
             chord: sug.chord, type: sug.route, route: sug.route,
             label: sug.label, vlScore: sug.vlScore, vlClass: sug.vlClass, common: sug.common,
             parentId: parent.id,
