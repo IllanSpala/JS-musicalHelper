@@ -612,6 +612,63 @@ function updateHistory() {
     });
 }
 
+/* ── REACTIVE QUALITY STATE ─────────────────────────────────────────────────
+   QUALITY_FAMILY mapeia qualquer qualidade para seu equivalente
+   em cada família de complexidade. Ao trocar a família, todos os
+   nós do grafo são remapeados instantaneamente sem reset do grafo.
+
+   Ex: Cmaj7 (tétrade) → C (tríade) ou Cadd9 (extensão).
+   A raiz é sempre preservada; só a fórmula intervalar muda.
+─────────────────────────────────────────────────────────────────────────── */
+const QUALITY_FAMILY = {
+    'maj':    { triads:'maj',   tetrads:'maj7',   extensions:'maj9'   },
+    'min':    { triads:'min',   tetrads:'m7',     extensions:'m9'     },
+    'maj7':   { triads:'maj',   tetrads:'maj7',   extensions:'maj9'   },
+    'm7':     { triads:'min',   tetrads:'m7',     extensions:'m9'     },
+    '7':      { triads:'maj',   tetrads:'7',      extensions:'9'      },
+    'dim7':   { triads:'min',   tetrads:'dim7',   extensions:'m7b5'   },
+    'm7b5':   { triads:'min',   tetrads:'m7b5',   extensions:'m7b5'   },
+    'mM7':    { triads:'min',   tetrads:'mM7',    extensions:'mM7'    },
+    'add9':   { triads:'maj',   tetrads:'maj7',   extensions:'add9'   },
+    'madd9':  { triads:'min',   tetrads:'m7',     extensions:'madd9'  },
+    '6':      { triads:'maj',   tetrads:'6',      extensions:'6/9'    },
+    'm6':     { triads:'min',   tetrads:'m6',     extensions:'m6'     },
+    'maj9':   { triads:'maj',   tetrads:'maj7',   extensions:'maj9'   },
+    '9':      { triads:'maj',   tetrads:'7',      extensions:'9'      },
+    'm9':     { triads:'min',   tetrads:'m7',     extensions:'m9'     },
+};
+
+function mapQuality(srcQuality, targetFamily) {
+    return QUALITY_FAMILY[srcQuality]?.[targetFamily] ?? srcQuality;
+}
+
+/**
+ * Reaplica a família de qualidade a TODOS os nós vivos no grafo.
+ * Preserva a raiz; recalcula cifra, notas e PCs de cada nó.
+ * Atualiza o DOM instantaneamente sem recriar nós (posições/física preservadas).
+ */
+function reapplyQualityToGraph(targetFamily) {
+    S.quality = mapQuality(S.quality, targetFamily);
+    const $qs = document.getElementById('ce-quality-select');
+    if ($qs) $qs.value = S.quality;
+
+    S.nodes.forEach(nd => {
+        if (!nd.chord) return;
+        const newQuality = mapQuality(nd.chord.quality, targetFamily);
+        const newChord   = MT.buildChord(nd.chord.root, newQuality);
+        if (!newChord) return;
+        nd.chord = newChord;
+        if (nd.el) {
+            const nameEl = nd.el.querySelector('.ce-node-chord');
+            if (nameEl) nameEl.textContent = newChord.name;
+        }
+    });
+
+    const mainNode = S.nodes.find(n => n.type === 'main');
+    if (mainNode) S.mainChord = mainNode.chord;
+    updateHistory();
+}
+
 /* ── CONTROLS ── */
 const $root    = document.getElementById('ce-root-select');
 const $mode    = document.getElementById('ce-mode-select');
@@ -623,7 +680,20 @@ const $chkVoi  = document.getElementById('ce-route-voice');
 
 $root.addEventListener('change', () => { S.root = $root.value; });
 $mode.addEventListener('change', () => { S.mode = $mode.value; });
-$qual.addEventListener('change', () => { S.quality = $qual.value; });
+
+// Seletor de família reativo — remapeia todos os nós ao mudar
+const FAMILY_MAP = {
+    'maj':  'triads',  'min':  'triads',
+    'maj7': 'tetrads', 'm7':   'tetrads', '7': 'tetrads',
+    'dim7': 'tetrads', 'm7b5': 'tetrads', 'mM7': 'tetrads',
+    'maj9': 'extensions', '9': 'extensions', 'm9': 'extensions',
+    'add9': 'extensions', 'madd9': 'extensions', '6/9': 'extensions',
+};
+$qual.addEventListener('change', () => {
+    S.quality = $qual.value;
+    const family = FAMILY_MAP[$qual.value] ?? 'tetrads';
+    reapplyQualityToGraph(family);
+});
 $chkRes.addEventListener('change', () => { S.routes.resolution = $chkRes.checked; });
 $chkTen.addEventListener('change', () => { S.routes.tension    = $chkTen.checked; });
 $chkVoi.addEventListener('change', () => { S.routes.voice      = $chkVoi.checked; });
