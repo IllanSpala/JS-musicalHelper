@@ -198,9 +198,10 @@ function runSimStep() {
         b.fx -= ux * f; b.fy -= uy * f;
     });
 
-    // Integrate + damp (pin 'main' and 'history' nodes)
+    // Integrate + damp
+    // 'main' e nós do caminho histórico (isPath) são fixados — não devem se mover
     n.forEach(nd => {
-        if (nd.type === 'main') return; // nó principal fixo no centro
+        if (nd.type === 'main' || nd.isPath) return;
         nd.vx = (nd.vx + nd.fx) * SIM.DAMP;
         nd.vy = (nd.vy + nd.fy) * SIM.DAMP;
         nd.x += nd.vx; nd.y += nd.vy;
@@ -524,6 +525,10 @@ function expandToMain(nd) {
     const siblingIds = new Set(siblingsToRemove.map(n => n.id));
     S.edges = S.edges.filter(e => !siblingIds.has(e.toId));
     S.nodes = S.nodes.filter(n => !siblingIds.has(n.id));
+
+    // Marca o nó clicado como parte do caminho ANTES do loop de demote,
+    // para que a física o fixe imediatamente e não seja erroneamente removido depois
+    nd.isPath = true;
 
     // Demote restantes: main → history-active, outros nós não-path → history
     S.nodes.forEach(n => {
