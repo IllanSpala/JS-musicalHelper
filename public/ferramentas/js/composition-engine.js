@@ -202,7 +202,8 @@ function runSimStep() {
         if (!a || !b) return;
         const dx   = b.x - a.x, dy = b.y - a.y;
         const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
-        const f    = SIM.K_SPR * (dist - SIM.REST);
+        const targetRest = e.rest || SIM.REST;
+        const f    = SIM.K_SPR * (dist - targetRest);
         const ux   = dx / dist, uy = dy / dist;
         a.fx += ux * f; a.fy += uy * f;
         b.fx -= ux * f; b.fy -= uy * f;
@@ -498,15 +499,15 @@ function spawnSuggestions(parent) {
     });
     if (!suggs.length) return;
 
-    // Place children closely around parent so they expand outward through the gaps like a gas
-    const R = 40;
+    // Place children in a perfect circle at their resting distance
+    const R = SIM.REST;
     suggs.forEach((sug, i) => {
         const angle = (i / suggs.length) * Math.PI * 2;
         const nd = {
             id: S.nextId++,
             x: parent.x + R * Math.cos(angle),
             y: parent.y + R * Math.sin(angle),
-            vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15,
+            vx: 0, vy: 0,
             chord: sug.chord, type: sug.route, route: sug.route,
             label: sug.label, vlScore: sug.vlScore, vlClass: sug.vlClass, common: sug.common,
             parentId: parent.id,
@@ -549,7 +550,12 @@ function expandToMain(nd) {
     });
 
     // Marca a aresta que conecta ao novo centro como "caminho histórico"
-    S.edges.forEach(e => { if (e.toId === nd.id) e.isHistory = true; });
+    S.edges.forEach(e => { 
+        if (e.toId === nd.id) {
+            e.isHistory = true;
+            e.rest = 650; // Afasta as rodas inteiras para não sobreporem
+        }
+    });
 
     // Pan da câmera para centralizar o nó escolhido
     const c = canvasCenter();
