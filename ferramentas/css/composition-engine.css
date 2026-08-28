@@ -249,6 +249,14 @@ body.ce-page {
     position: absolute; inset: 0; z-index: 2;
 }
 
+/* Playing highlight */
+.ce-node--playing {
+    box-shadow: 0 0 20px 8px var(--ce-purple) !important;
+    transform: translate(-50%, -50%) scale(1.15) !important;
+    border-color: #fff !important;
+    z-index: 99 !important;
+}
+
 /* Canvas drag cursor */
 .ce-canvas-area.dragging { cursor: grabbing !important; }
 .ce-canvas-area { cursor: grab; }

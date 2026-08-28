@@ -35,54 +35,29 @@ const $collapser= document.getElementById('ce-collapser');
 
 /* ── WEBAUDIO ── */
 function ctx() {
-    if (!S.audioCtx) S.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (S.audioCtx.state === 'suspended') S.audioCtx.resume();
-    return S.audioCtx;
+    return window.JJAudio ? window.JJAudio.init() : null;
 }
 
-/* Stop all currently playing notes with a quick fade-out */
 function stopAllNotes() {
-    if (!S.audioCtx) return;
-    const now = S.audioCtx.currentTime;
-    S.activeNotes.forEach(({ osc, env }) => {
-        try {
-            env.gain.cancelScheduledValues(now);
-            env.gain.setTargetAtTime(0, now, 0.015);
-            osc.stop(now + 0.1);
-        } catch (e) {}
-    });
-    S.activeNotes = [];
+    if (window.stopAllNotes) window.stopAllNotes();
 }
 
-/* ADSR note — triangle + slight detuning for warmth */
-function playNote(pc, oct, startAt, dur = 3.5, vol = 0.14) {
-    const c = ctx(), t = startAt;
-    const freq = MT.pcToFreq(pc, oct);
-    ['triangle', 'sine'].forEach((type, i) => {
-        const osc = c.createOscillator();
-        const env = c.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq * (i === 1 ? 1.003 : 1), t);
-        const v = vol * (i === 1 ? 0.4 : 1);
-        env.gain.setValueAtTime(0, t);
-        env.gain.linearRampToValueAtTime(v, t + 0.012);   // attack
-        env.gain.setValueAtTime(v * 0.75, t + 0.15);      // decay
-        env.gain.setValueAtTime(v * 0.65, t + dur - 1.8); // sustain hold
-        env.gain.exponentialRampToValueAtTime(0.0001, t + dur); // release
-        osc.connect(env); env.connect(c.destination);
-        osc.start(t); osc.stop(t + dur + 0.05);
-        S.activeNotes.push({ osc, env });
-    });
+function playNoteWrapper(pc, oct, startAt, dur = 3.5, vol = 0.14) {
+    if (window.playNote) {
+        const midiNote = pc + (oct + 1) * 12;
+        window.playNote(midiNote, dur, false, startAt);
+    }
 }
 
 /* Arpejo hover: grave→agudo, 50ms gap, ADSR longo */
 function arpeggiate(chord, dur = 3.2) {
     if (!chord) return;
     stopAllNotes(); // Impede o "stack" de acordes ao hoverar rapidamente
-    const c = ctx(), now = c.currentTime;
+    const c = ctx();
+    const now = c ? c.currentTime : 0;
     chord.pcs.forEach((pc, i) => {
         const oct = i === 0 ? 3 : (i < 3 ? 4 : 5);
-        playNote(pc, oct, now + i * 0.052, dur, 0.13);
+        playNoteWrapper(pc, oct, now + i * 0.052, dur, 0.13);
     });
 }
 
@@ -91,7 +66,8 @@ const STRUM = [1, 1, -1, -1, 1]; // 1=down -1=up
 function strumChord(chord, beatSec, accentFactor = 1) {
     if (!chord) return;
     stopAllNotes(); // Clear audio from previous chord before strumming new one
-    const c = ctx(), now = c.currentTime;
+    const c = ctx();
+    const now = c ? c.currentTime : 0;
     
     // Assign octaves BEFORE reversing for upstrums, so the voicing stays musically identical
     const voicings = chord.pcs.map((pc, i) => ({
@@ -101,9 +77,9 @@ function strumChord(chord, beatSec, accentFactor = 1) {
     STRUM.forEach((dir, si) => {
         const ordered = dir === 1 ? [...voicings] : [...voicings].reverse();
         const tStrum  = now + si * (beatSec / STRUM.length);
-        const vel     = (si === 0 ? 0.16 : 0.10) * accentFactor;
+        // We ignore the `vel` calculation from before because JJAudio handles its own dynamics
         ordered.forEach((v, ni) => {
-            playNote(v.pc, v.oct, tStrum + ni * 0.018, beatSec * 1.8, vel);
+            playNoteWrapper(v.pc, v.oct, tStrum + ni * 0.018, beatSec * 1.8, 0.14);
         });
     });
 }
@@ -113,14 +89,29 @@ function playProgression() {
         S.strumHandles.forEach(h => clearTimeout(h));
     }
     S.strumHandles = [];
-    stopAllNotes(); // Immediate silence if clicked rapidly
+    stopAllNotes(); // Immediate silence se clicado rapidamente
 
     const mainNode = S.nodes.find(n => n.type === 'main');
     const all = [...S.history, mainNode].filter(Boolean);
     if (!all.length) return;
+    
+    // Clear previous highlights
+    document.querySelectorAll('.ce-node--playing').forEach(el => el.classList.remove('ce-node--playing'));
+    
     const beatSec = (60 / S.bpm) * 2;
     all.forEach((nd, i) => {
-        const h = setTimeout(() => strumChord(nd.chord, beatSec), i * beatSec * 1000);
+        const h = setTimeout(() => {
+            document.querySelectorAll('.ce-node--playing').forEach(el => el.classList.remove('ce-node--playing'));
+            if (nd.el) nd.el.classList.add('ce-node--playing');
+            
+            strumChord(nd.chord, beatSec);
+            
+            // Remove o brilho no final do beat
+            setTimeout(() => {
+                if (nd.el) nd.el.classList.remove('ce-node--playing');
+            }, beatSec * 1000 - 50);
+            
+        }, i * beatSec * 1000);
         S.strumHandles.push(h);
     });
 }
@@ -541,6 +532,12 @@ function spawnSuggestions(parent) {
 }
 
 function expandToMain(nd) {
+    if (S.strumHandles) {
+        S.strumHandles.forEach(h => clearTimeout(h));
+        S.strumHandles = [];
+        document.querySelectorAll('.ce-node--playing').forEach(el => el.classList.remove('ce-node--playing'));
+    }
+
     arpeggiate(nd.chord, 2.8);
     
     const prevMain = S.nodes.find(n => n.type === 'main');
@@ -576,16 +573,14 @@ function expandToMain(nd) {
         }
     });
 
-    // Marca a aresta do caminho histórico
+    // Arestas de histórico
     S.edges.forEach(e => { 
         if (e.toId === nd.id) e.isHistory = true;
     });
 
-    // Pan da câmera para centralizar o nó escolhido
-    const c = canvasCenter();
-    S.pan.x = c.x - (nd.x * S.zoom);
-    S.pan.y = c.y - (nd.y * S.zoom);
-    applyTransform();
+    // Removido o pan automático: O nó que você clicou fica exatamente 
+    // embaixo do mouse, evitando confusões de UI onde um nó recém 
+    // criado apareceria debaixo do ponteiro.
 
     nd.type = 'main';
     nd.route = null;

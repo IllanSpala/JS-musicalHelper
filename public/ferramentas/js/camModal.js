@@ -139,15 +139,10 @@
         }
 
         // Copy scale options if empty or out of sync
+        // Using innerHTML ensures optgroups are cloned as well
         if (scaleSelect && (modalScaleSel.options.length === 0 || modalScaleSel.options.length !== scaleSelect.options.length)) {
-            modalScaleSel.innerHTML = '';
-            Array.from(scaleSelect.options).forEach(opt => {
-                const newOpt = document.createElement('option');
-                newOpt.value = opt.value;
-                newOpt.text = opt.text;
-                modalScaleSel.appendChild(newOpt);
-            });
-            modalScaleSel.value = scaleSelect.value || 'major';
+            modalScaleSel.innerHTML = scaleSelect.innerHTML;
+            modalScaleSel.value = scaleSelect.value || 'Major (Ionian)';
         }
 
         // Bind sync events once

@@ -207,26 +207,7 @@ function _scaleSave() {
 let expandedDegree = null;
 
 // --- AUDIO ---
-let audioCtx = null;
-function playNote(midiNote) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
-    const now  = audioCtx.currentTime;
-    [[1,0.55],[2,0.28],[3,0.14],[4,0.06]].forEach(([h, amp]) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = h <= 2 ? 'triangle' : 'sine';
-        osc.frequency.value = freq * h;
-        gain.gain.setValueAtTime(amp, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 1.7);
-    });
-}
-
+// audio engine is now shared from audio-engine.js
 // --- HELPERS ---
 function getNoteName(semitone, root) {
     return FLAT_KEYS.includes(root) ? NOTES_FLAT[semitone] : NOTES_SHARP[semitone];
