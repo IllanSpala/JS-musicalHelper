@@ -14,6 +14,13 @@ const SCALE_ORDER = [
     'Diminished (HW)', 'Whole Tone'
 ];
 
+const SCALE_CATEGORIES = [
+    { label: { pt: 'Maiores e Menores', en: 'Major & Minor' }, scales: ['Major (Ionian)', 'Natural Minor', 'Harmonic Minor', 'Melodic Minor'] },
+    { label: { pt: 'Pentatônicas & Blues', en: 'Pentatonics & Blues' }, scales: ['Pentatonic Major', 'Pentatonic Minor', 'Blues'] },
+    { label: { pt: 'Modos Gregos', en: 'Greek Modes' }, scales: ['Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Locrian'] },
+    { label: { pt: 'Simétricas e Outras', en: 'Symmetrical & Others' }, scales: ['Diminished (HW)', 'Whole Tone'] }
+];
+
 const SCALE_NAMES_PT = {
     'Major (Ionian)': 'Maior (Jônio)', 'Natural Minor': 'Menor Natural',
     'Pentatonic Major': 'Pentatônica Maior', 'Pentatonic Minor': 'Pentatônica Menor',
@@ -1093,18 +1100,35 @@ function populateSelects() {
     
     const scaleSel = document.getElementById('scale-select');
     scaleSel.innerHTML = '';
-    SCALE_ORDER.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name; 
-        opt.textContent = SCALE_NAMES[name]; 
-        if (name === state.scaleName) opt.selected = true;
-        scaleSel.appendChild(opt);
+    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
+    
+    SCALE_CATEGORIES.forEach(cat => {
+        const group = document.createElement('optgroup');
+        group.label = cat.label[lang] || cat.label.pt;
+        cat.scales.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name; 
+            opt.textContent = SCALE_NAMES[name]; 
+            if (name === state.scaleName) opt.selected = true;
+            group.appendChild(opt);
+        });
+        scaleSel.appendChild(group);
     });
 }
 
 // Atualiza o texto dos selects em tempo real quando o idioma muda
 function updateScaleSelectTranslations() {
     const scaleSel = document.getElementById('scale-select');
+    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'pt';
+    
+    // Update optgroups
+    const optgroups = scaleSel.querySelectorAll('optgroup');
+    optgroups.forEach((group, i) => {
+        if (SCALE_CATEGORIES[i]) {
+            group.label = SCALE_CATEGORIES[i].label[lang] || SCALE_CATEGORIES[i].label.pt;
+        }
+    });
+
     Array.from(scaleSel.options).forEach(opt => {
         opt.textContent = SCALE_NAMES[opt.value];
     });
