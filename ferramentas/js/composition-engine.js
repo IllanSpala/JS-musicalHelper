@@ -781,11 +781,31 @@ $mobileOverlay && $mobileOverlay.addEventListener('click', closeMobileSidebar);
 
 // Help modal
 document.getElementById('ce-help-btn').addEventListener('click', () => $modal.classList.add('active'));
+
 document.querySelectorAll('.ce-help-trigger').forEach(el => {
-    el.addEventListener('click', () => $modal.classList.add('active'));
+    el.addEventListener('click', (e) => {
+        const targetId = e.target.getAttribute('data-target');
+        if (targetId) {
+            document.getElementById(targetId).classList.add('active');
+        }
+    });
 });
+
+document.querySelectorAll('.ce-modal-specific-close').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.target.closest('.ce-modal-overlay').classList.remove('active');
+    });
+});
+
+// Close general modal
 document.getElementById('ce-modal-close').addEventListener('click', () => $modal.classList.remove('active'));
-$modal.addEventListener('click', e => { if (e.target === $modal) $modal.classList.remove('active'); });
+
+// Close any modal when clicking outside
+document.querySelectorAll('.ce-modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { 
+        if (e.target === overlay) overlay.classList.remove('active'); 
+    });
+});
 
 /* ── INIT ── */
 const initPct = ((90-40)/(240-40)*100).toFixed(1);

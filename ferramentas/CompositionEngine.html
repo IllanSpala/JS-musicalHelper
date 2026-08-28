@@ -91,17 +91,7 @@
             </div>
         </div>
 
-        <div class="ce-modal-section">
-            <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin:0 0 6px;">Parâmetros da Teia</p>
-            <div class="ce-modal-row">
-                <i class="fas fa-layer-group" style="color:#a78bfa;font-size:1rem;flex-shrink:0"></i>
-                <p><strong>Modo</strong> — Define a tonalidade base. Ao alterar, os caminhos gerados refletem as progressões daquele modo diatônico.</p>
-            </div>
-            <div class="ce-modal-row">
-                <i class="fas fa-adjust" style="color:#a78bfa;font-size:1rem;flex-shrink:0"></i>
-                <p><strong>Tipo de Acorde</strong> — Converte dinamicamente toda a cena harmônica para a densidade escolhida (Tríades simples, 7ªs ou Extensões).</p>
-            </div>
-        </div>
+
 
         <div class="ce-modal-section" style="font-size:.78rem;color:rgba(255,255,255,.5)">
             <p style="margin:0"><strong style="color:#fff">Navegação:</strong> Arraste o fundo para mover o mapa · Scroll para zoom · Passe o mouse nas bolhas para ouvir e ver o shape CAGED</p>
@@ -110,6 +100,68 @@
         <button id="ce-modal-close" class="ce-modal-close">Entendido</button>
     </div>
 </div>
+
+<!-- HELP MODAL: MODO -->
+<div id="ce-modal-mode" class="ce-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ce-modal-mode-title">
+    <div class="ce-modal-box">
+        <h3 id="ce-modal-mode-title"><i class="fas fa-layer-group"></i> Modos Musicais</h3>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:1rem; line-height:1.4;">
+            O modo define a <strong>tonalidade base</strong>. O motor recalcula todas as rotas considerando as regras diatônicas e os empréstimos daquele modo.
+        </p>
+        <div class="ce-modal-section">
+            <div class="ce-modal-row"><p><strong>Maior (Jônico)</strong> — Tonalidade alegre. Gera subdominantes maiores (IV) e relativas menores (VIm).</p></div>
+            <div class="ce-modal-row"><p><strong>Menor Natural (Eólio)</strong> — Tonalidade triste/épica. A subdominante vira menor (ivm) e a relativa maior (bIII).</p></div>
+            <div class="ce-modal-row"><p><strong>Dórico</strong> — Menor com a 6ª maior (jazz/funk). Gera subdominantes maiores (IV) mesmo sendo um acorde base menor.</p></div>
+            <div class="ce-modal-row"><p><strong>Mixolídio</strong> — Maior com 7ª menor (blues/rock). O V grau vira menor (vm) e a subtônica é maior (bVII).</p></div>
+            <div class="ce-modal-row"><p><strong>Lídio</strong> — Maior com 4ª aumentada (sonhador/misterioso). Gera o acorde maior no II grau (II).</p></div>
+            <div class="ce-modal-row"><p><strong>Frígio</strong> — Menor com 2ª menor (flamenco/sombrio). Traz o acorde Napolitano (bII) muito forte.</p></div>
+            <div class="ce-modal-row"><p><strong>Lócrio</strong> — Instável. Base diminuta. Muito usado apenas como acorde de passagem.</p></div>
+        </div>
+        <button class="ce-modal-close ce-modal-specific-close">Entendido</button>
+    </div>
+</div>
+
+<!-- HELP MODAL: QUALITY -->
+<div id="ce-modal-quality" class="ce-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ce-modal-quality-title">
+    <div class="ce-modal-box">
+        <h3 id="ce-modal-quality-title"><i class="fas fa-adjust"></i> Tipo de Acorde</h3>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:1rem; line-height:1.4;">
+            Define a <strong>"densidade"</strong> harmônica. Quando você altera, toda a teia visual imediatamente se converte para refletir essa complexidade.
+        </p>
+        <div class="ce-modal-section">
+            <div class="ce-modal-row"><p><strong>Tríades (Maior / Menor)</strong> — Acordes básicos de 3 notas (Tônica, 3ª, 5ª). Som puro e direto, comum no pop e rock clássico.</p></div>
+            <div class="ce-modal-row"><p><strong>Tétrades (Maj7, m7, 7)</strong> — Acordes de 4 notas. A 7ª adiciona textura rica usada em jazz, bossa nova, neo-soul e R&B.</p></div>
+            <div class="ce-modal-row"><p><strong>Extensões (9, 11, 13)</strong> — Acordes muito complexos do jazz moderno e harmonia avançada. O motor tenta sugerir a melhor extensão baseada na função.</p></div>
+        </div>
+        <button class="ce-modal-close ce-modal-specific-close">Entendido</button>
+    </div>
+</div>
+
+<!-- HELP MODAL: ROUTES -->
+<div id="ce-modal-routes" class="ce-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ce-modal-routes-title">
+    <div class="ce-modal-box">
+        <h3 id="ce-modal-routes-title"><i class="fas fa-project-diagram"></i> Rotas Visíveis</h3>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:1rem; line-height:1.4;">
+            As conexões e cores explicam <strong>por que</strong> o motor sugeriu aquele acorde vizinho em relação ao central.
+        </p>
+        <div class="ce-modal-section">
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.5)"></div>
+                <p><strong>Resolução (Verde)</strong> — Acordes naturais da tonalidade. 4ª ascendente, dominante (V7) indo para tônica. É o caminho "esperado" e forte.</p>
+            </div>
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#f97316;box-shadow:0 0 8px rgba(249,115,22,.5)"></div>
+                <p><strong>Tensão / Empréstimo (Laranja)</strong> — Quebras de expectativa. Acordes fora da tonalidade base, como dominantes secundários, Napolitanos, ou do modo paralelo.</p>
+            </div>
+            <div class="ce-modal-row">
+                <div class="ce-modal-dot" style="background:#38bdf8;box-shadow:0 0 8px rgba(56,189,248,.5)"></div>
+                <p><strong>Retenção de Voz (Azul)</strong> — Voice Leading. Acordes que podem não ter relação funcional direta, mas dividem 2 ou mais notas, soando como uma transição mágica/cinemática.</p>
+            </div>
+        </div>
+        <button class="ce-modal-close ce-modal-specific-close">Entendido</button>
+    </div>
+</div>
+
 
 <!-- MOBILE SIDEBAR TOGGLE -->
 <button class="ce-sidebar-toggle-mobile" id="ce-mobile-toggle" aria-label="Abrir painel lateral">
@@ -156,7 +208,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-mode-select">
                     <i class="fas fa-layer-group"></i> Modo
-                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
+                    <i class="fas fa-question-circle ce-help-trigger" data-target="ce-modal-mode" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda sobre Modos"></i>
                 </label>
                 <select id="ce-mode-select" class="ce-select">
                     <option value="major">Maior (Jônico)</option>
@@ -182,7 +234,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-quality-select">
                     <i class="fas fa-adjust"></i> Tipo de Acorde
-                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
+                    <i class="fas fa-question-circle ce-help-trigger" data-target="ce-modal-quality" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda sobre Tipos"></i>
                 </label>
                 <select id="ce-quality-select" class="ce-select">
                     <optgroup label="Tríades">
@@ -212,7 +264,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label">
                     <i class="fas fa-project-diagram"></i> Rotas Visíveis
-                    <i class="fas fa-question-circle ce-help-trigger" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda"></i>
+                    <i class="fas fa-question-circle ce-help-trigger" data-target="ce-modal-routes" style="opacity: 0.6; cursor: pointer; margin-left: 4px;" title="Ajuda sobre Rotas"></i>
                 </label>
                 <div class="ce-toggle-list" role="group">
                     <label class="ce-toggle-item">
