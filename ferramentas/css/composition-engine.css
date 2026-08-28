@@ -353,7 +353,11 @@ body.ce-page {
     width: 60px; height: 60px; opacity: .45;
     background: rgba(255,255,255,.03);
     border: 1px solid rgba(255,255,255,.08);
-    cursor: default; pointer-events: none;
+    cursor: pointer; pointer-events: auto;
+}
+.ce-node--history:hover {
+    background: rgba(255,255,255,.1);
+    opacity: 0.8;
 }
 
 .ce-node--history-active {

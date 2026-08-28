@@ -199,9 +199,10 @@ function runSimStep() {
     });
 
     // Integrate + damp
-    // 'main' e nós do caminho histórico (isPath) são fixados — não devem se mover
+    // 'main', nós do caminho histórico (isPath) e todos os nós antigos ('history') são fixados
+    // Isso cria "múltiplas teias procedurais" preservando a posição das gerações anteriores
     n.forEach(nd => {
-        if (nd.type === 'main' || nd.isPath) return;
+        if (nd.type === 'main' || nd.type === 'history' || nd.isPath) return;
         nd.vx = (nd.vx + nd.fx) * SIM.DAMP;
         nd.vy = (nd.vy + nd.fy) * SIM.DAMP;
         nd.x += nd.vx; nd.y += nd.vy;
@@ -504,27 +505,6 @@ function expandToMain(nd) {
     
     const prevMain = S.nodes.find(n => n.type === 'main');
     if (prevMain) S.history.push(prevMain);
-
-    // Prune siblings: remove irmãos (mesma geração, mesmo parentId, não selecionados)
-    const siblingsToRemove = S.nodes.filter(n =>
-        n.id !== nd.id &&
-        n.parentId === nd.parentId &&
-        !n.isPath &&
-        n.type !== 'main' &&
-        n.type !== 'history'
-    );
-
-    siblingsToRemove.forEach(n => {
-        if (n.el) {
-            n.el.classList.add('ce-node-fade-out');
-            n.el.addEventListener('animationend', () => n.el?.remove(), { once: true });
-        }
-    });
-
-    // Remove os edges dos siblings
-    const siblingIds = new Set(siblingsToRemove.map(n => n.id));
-    S.edges = S.edges.filter(e => !siblingIds.has(e.toId));
-    S.nodes = S.nodes.filter(n => !siblingIds.has(n.id));
 
     // Marca o nó clicado como parte do caminho ANTES do loop de demote,
     // para que a física o fixe imediatamente e não seja erroneamente removido depois
