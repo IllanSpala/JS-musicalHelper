@@ -171,13 +171,26 @@
                     <i class="fas fa-adjust"></i> Tipo de Acorde
                 </label>
                 <select id="ce-quality-select" class="ce-select">
-                    <option value="maj7">Maj7</option>
-                    <option value="7">Dominante 7</option>
-                    <option value="m7">m7</option>
-                    <option value="m7b5">m7b5</option>
-                    <option value="dim7">dim7</option>
-                    <option value="maj">Tríade Maior</option>
-                    <option value="min">Tríade Menor</option>
+                    <optgroup label="Tríades">
+                        <option value="maj" selected>Maior</option>
+                        <option value="min">Menor</option>
+                    </optgroup>
+                    <optgroup label="Tétrades (7ª)">
+                        <option value="maj7">Maj7</option>
+                        <option value="7">Dominante 7</option>
+                        <option value="m7">m7</option>
+                        <option value="m7b5">m7b5 (Meio-Dim)</option>
+                        <option value="dim7">dim7 (Diminuto)</option>
+                        <option value="mM7">mM7 (Menor c/ 7M)</option>
+                    </optgroup>
+                    <optgroup label="Extensões (9ª, etc)">
+                        <option value="add9">add9</option>
+                        <option value="madd9">madd9</option>
+                        <option value="maj9">maj9</option>
+                        <option value="9">Dominante 9</option>
+                        <option value="m9">m9</option>
+                        <option value="6/9">6/9</option>
+                    </optgroup>
                 </select>
             </div>
 

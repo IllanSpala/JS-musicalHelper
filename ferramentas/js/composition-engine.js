@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── STATE ── */
 const S = {
     mainChord: null, history: [], nodes: [], edges: [],
-    nextId: 0, audioCtx: null, bpm: 90, quality: 'maj7',
+    nextId: 0, audioCtx: null, bpm: 90, quality: 'maj',
     root: 'C', mode: 'major',
     routes: { resolution: true, tension: true, voice: true },
     simRunning: false, simHandle: null,
@@ -711,8 +711,8 @@ const $chkRes  = document.getElementById('ce-route-resolution');
 const $chkTen  = document.getElementById('ce-route-tension');
 const $chkVoi  = document.getElementById('ce-route-voice');
 
-$root.addEventListener('change', () => { S.root = $root.value; });
-$mode.addEventListener('change', () => { S.mode = $mode.value; });
+$root.addEventListener('change', () => { S.root = $root.value; initGraph(); });
+$mode.addEventListener('change', () => { S.mode = $mode.value; initGraph(); });
 
 // Seletor de família reativo — remapeia todos os nós ao mudar
 const FAMILY_MAP = {
