@@ -486,24 +486,23 @@ const MT = (() => {
           dots:[[3,0],[4,2],[5,3],[6,2]], barre:null, muted:[1,2] },
     ];
 
-    // CAGED_MINOR7: baseados nas posições abertas de Am e Em
-    // Am aberto: x-0-2-2-1-0 → R-5-b3-R-5 (notas: R,5ª,b3ª ✓)
+    // CAGED_MINOR7: shapes base para acordes menores
     const CAGED_MINOR7 = [
         // Am-shape: raiz na corda La (2)
         { cagedLetter:'A', rootString:2, rootFretOffset:0,
-          dots:[[2,0],[3,2],[4,2],[5,1],[6,0]], barre:null, muted:[1] },
-        // Em-shape: raiz na MiGrave (1). Em aberto: 0-2-2-0-0-0 → R-5-b3-R-5
+          dots:[[2,0],[3,2],[4,2],[5,1],[6,0]], muted:[1] },
+        // Em-shape: raiz na MiGrave (1). Em aberto: 0-2-2-0-0-0
         { cagedLetter:'E', rootString:1, rootFretOffset:0,
-          dots:[[1,0],[2,2],[3,2],[4,0],[5,0],[6,0]], barre:null, muted:[] },
-        // Dm-shape: raiz no Re (3). Dm aberto: x-x-0-2-3-1 → R-5-b3-R
+          dots:[[1,0],[2,2],[3,2],[4,0],[5,0],[6,0]], muted:[] },
+        // Dm-shape: raiz no Re (3). Dm aberto: x-x-0-2-3-1
         { cagedLetter:'D', rootString:3, rootFretOffset:0,
-          dots:[[3,0],[4,2],[5,3],[6,1]], barre:null, muted:[1,2] },
-        // Cm-shape: barre na La (2) — baseado no Am transposto
+          dots:[[3,0],[4,2],[5,3],[6,1]], muted:[1,2] },
+        // Cm-shape: raiz na La (2). Cm aberto 'teórico': x-3-1-0-1-x
         { cagedLetter:'C', rootString:2, rootFretOffset:3,
-          dots:[[2,3],[3,5],[4,5],[5,4],[6,3]], barre:{ fret:3, strFrom:2, strTo:6 }, muted:[1] },
-        // Gm-shape: barre na MiGrave (1)
+          dots:[[2,3],[3,1],[4,0],[5,1]], muted:[1,6] },
+        // Gm-shape: raiz na MiGrave (1). Gm aberto 'teórico': 3-1-0-0-3-3
         { cagedLetter:'G', rootString:1, rootFretOffset:3,
-          dots:[[1,3],[2,5],[3,5],[4,3],[5,3],[6,3]], barre:{ fret:3, strFrom:1, strTo:6 }, muted:[] },
+          dots:[[1,3],[2,1],[3,0],[4,0],[5,3],[6,3]], muted:[] },
     ];
 
     /**
@@ -532,35 +531,47 @@ const MT = (() => {
 
         const shapes = baseShapes.map(shape => {
             const openP  = openPC[shape.rootString];
-            // Fret onde a raiz aparece nessa corda (mínimo 1 para evitar corda solta como raiz)
+            // Fret da tônica na corda específica
             let baseFret = mod12(rootPC - openP);
-            if (baseFret === 0) baseFret = 12;
+            
+            // Ajusta oitava se a pestana for cair em traste negativo
+            if (baseFret - shape.rootFretOffset < 0) {
+                baseFret += 12;
+            }
 
-            // Translada: fret absoluto = baseFret + (relFret - rootFretOffset)
+            const barreFret = baseFret - shape.rootFretOffset;
+
             const translatedDots = shape.dots.map(([str, relFret]) => {
-                if (relFret === 0) return [str, 0]; // corda solta — não translada
-                const absFret = baseFret + (relFret - shape.rootFretOffset);
-                return [str, Math.max(1, absFret)];
+                return [str, barreFret + relFret];
             });
 
-            // capoFret = menor fret pressionado (para mostrar posição no braço)
-            const pressedFrets = translatedDots.filter(d => d[1] > 0).map(d => d[1]);
-            const capoFret = pressedFrets.length ? Math.min(...pressedFrets) : 1;
+            // Cria o barre dinamicamente se barreFret > 0 e houver >= 2 cordas soltas no shape original
+            let barre = null;
+            if (barreFret > 0) {
+                const openStrings = shape.dots.filter(d => d[1] === 0).map(d => d[0]);
+                if (openStrings.length >= 2) {
+                    barre = {
+                        fret: barreFret,
+                        strFrom: Math.min(...openStrings),
+                        strTo: Math.max(...openStrings)
+                    };
+                }
+            }
+
+            // capoFret = pestana ou 1 (se cordas soltas, para exibir no braço corretamente)
+            const capoFret = barreFret > 0 ? barreFret : 1;
 
             return {
                 cagedLetter: shape.cagedLetter,
                 capoFret,
                 dots: translatedDots,
-                barre: shape.barre
-                    ? { fret: capoFret, strFrom: shape.barre.strFrom, strTo: shape.barre.strTo }
-                    : null,
+                barre: barre,
                 muted: shape.muted,
                 fretWindow: [capoFret, capoFret + 4],
             };
         });
 
-        // Ordena pela posição no braço (do mais grave perto da pestana para o mais agudo)
-        // Isso garante que o "Shape Original" (mais comum/baixo) seja sempre o primeiro no carrossel.
+        // Ordena pela posição no braço (do mais grave para o mais agudo)
         return shapes.sort((a, b) => a.capoFret - b.capoFret);
     }
 
