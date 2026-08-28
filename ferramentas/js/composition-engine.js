@@ -155,100 +155,112 @@ document.getElementById('ce-zoom-in').onclick    = () => { S.zoom = Math.min(3, 
 document.getElementById('ce-zoom-out').onclick   = () => { S.zoom = Math.max(.25, S.zoom / 1.2); applyTransform(); };
 document.getElementById('ce-zoom-reset').onclick = () => { S.zoom = 1; S.pan = { x: 0, y: 0 }; applyTransform(); };
 
-/* ── FORCE-DIRECTED SIMULATION ──────────────────────────────────
-   Analogia: cada nó é uma partícula carregada positivamente.
-   • Repulsão (Coulomb): F = k / d²  — afasta todos os pares.
-   • Atração (mola): F = k_s * (d - rest)  — puxa arestas conectadas.
-   • Damping: v *= 0.82  — dissipa energia até o sistema parar.
-   Resultado: após ~60 frames, os nós chegam em equilíbrio sem sobreposição.
-──────────────────────────────────────────────────────────────── */
-const SIM = { K_REP: 18000, K_SPR: 0.04, REST: 220, DAMP: 0.80, MIN_V: 0.3 };
+/* ── DIRECTIONAL FAN GROWTH SIMULATION ─────────────────────────────────────
+   Arquitetura em 3 camadas:
+
+   1. ARC SPAWNING (Determinístico, zero física necessária para filhos):
+      • Cada geração nasce em um leque (arco) apontando para FRENTE,
+        nunca para trás. Isso elimina sobreposições estruturalmente.
+      • Root (Gen 0): leque de 360°.
+      • Gen N>0: leque de FAN_ARC° centrado no vetor de avanço (ângulo do pai ao filho).
+
+   2. ORBIT LOCK (Filhos fixados ao pai):
+      • Filhos de um nó estão presos em órbita rígida ao redor do pai.
+      • Eles NÃO se movem por repulsão de outros filhos, apenas pela
+        translação da própria espinha dorsal.
+
+   3. SPINE PHYSICS (Macro-estrutura):
+      • Apenas nós da Espinha Dorsal (isPath + main) recebem forças.
+      • Repulsão SPINE-SPINE: força gigante para manter centros a >650px.
+      • Força de Expansão Radial: empurra cada centro para longe da origem
+        global (0,0), garantindo que a progressão sempre avance para fora.
+──────────────────────────────────────────────────────────────────────────── */
+const SIM = {
+    ORBIT_R: 220,      // raio do leque de filhos em torno do pai
+    FAN_ARC: 200,      // graus do arco de spawn para gerações futuras
+    SPINE_REST: 650,   // distância mínima desejada entre centros de estrela
+    K_SPINE: 2.0,      // força da mola da espinha
+    K_RADIAL: 0.25,    // força de expansão radial (empurra para longe da origem)
+    DAMP: 0.75,        // amortecimento da espinha
+    MIN_V: 0.5,        // limiar de energia cinética para parar simulação
+};
 
 function runSimStep() {
-    const n = S.nodes;
-    if (n.length < 2) { S.simRunning = false; return; }
+    // Apenas nós da espinha são móveis (isPath) — filhos são posicionados de forma derivada
+    const spineNodes = S.nodes.filter(nd => nd.isPath || nd.type === 'main');
+    if (spineNodes.length < 2) { S.simRunning = false; _repositionOrbitNodes(); refreshSvgEdges(); return; }
 
     let maxV = 0;
 
     // Init forces
-    n.forEach(nd => { nd.fx = 0; nd.fy = 0; nd.vx = nd.vx || 0; nd.vy = nd.vy || 0; });
+    spineNodes.forEach(nd => { nd.fx = 0; nd.fy = 0; nd.vx = nd.vx || 0; nd.vy = nd.vy || 0; });
 
-    // Repulsion between all pairs — O(n²), acceptable for n≤30
-    for (let i = 0; i < n.length; i++) {
-        for (let j = i + 1; j < n.length; j++) {
-            let dx = n[j].x - n[i].x, dy = n[j].y - n[i].y;
-            // Previne divisão por zero caso nasçam na mesma coordenada exata
-            if (dx === 0 && dy === 0) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; }
-            
+    // Força 1: Repulsão SPINE-SPINE (garante que centros nunca se sobreponham)
+    for (let i = 0; i < spineNodes.length; i++) {
+        for (let j = i + 1; j < spineNodes.length; j++) {
+            let dx = spineNodes[j].x - spineNodes[i].x;
+            let dy = spineNodes[j].y - spineNodes[i].y;
+            if (dx === 0 && dy === 0) { dx = (Math.random() - 0.5) * 10; dy = (Math.random() - 0.5) * 10; }
             const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
-            let f = SIM.K_REP / (dist * dist);
-            
-            // Hard Collision / Espaçamento Mínimo para bolhas normais:
-            if (dist < 110) {
-                f += (110 - dist) * 0.8; 
-            }
 
-            // Repulsão brutal entre os "Centros" das estrelas (main e history-active)
-            // Isso garante que se o usuário "voltar" (ex: esquerda, depois direita), 
-            // os centros vão deslizar para formar um triângulo (cima/baixo) em vez de sobrepor a linha.
-            const isCenterI = n[i].type === 'main' || n[i].isPath;
-            const isCenterJ = n[j].type === 'main' || n[j].isPath;
-            if (isCenterI && isCenterJ && dist < 700) {
-                if (dist < 10) { dx += (Math.random() - 0.5) * 50; dy += (Math.random() - 0.5) * 50; } // kick forte para o lado
-                f += (700 - dist) * 1.5; 
+            // Força de mola inversa: empurra se dist < SPINE_REST
+            if (dist < SIM.SPINE_REST) {
+                const f = SIM.K_SPINE * (SIM.SPINE_REST - dist);
+                const ux = dx / dist, uy = dy / dist;
+                spineNodes[i].fx -= ux * f; spineNodes[i].fy -= uy * f;
+                spineNodes[j].fx += ux * f; spineNodes[j].fy += uy * f;
             }
-            
-            const ux = dx / dist, uy = dy / dist;
-            n[i].fx -= ux * f; n[i].fy -= uy * f;
-            n[j].fx += ux * f; n[j].fy += uy * f;
         }
     }
 
-    // Spring attraction along edges
-    S.edges.forEach(e => {
-        const a = n.find(nd => nd.id === e.fromId);
-        const b = n.find(nd => nd.id === e.toId);
-        if (!a || !b) return;
-        const dx   = b.x - a.x, dy = b.y - a.y;
-        const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
-        const targetRest = e.rest || SIM.REST;
-        const f    = SIM.K_SPR * (dist - targetRest);
-        const ux   = dx / dist, uy = dy / dist;
-        a.fx += ux * f; a.fy += uy * f;
-        b.fx -= ux * f; b.fy -= uy * f;
+    // Força 2: Expansão Radial — cada nó da espinha é empurrado para longe da raiz
+    spineNodes.forEach(nd => {
+        const dist = Math.sqrt(nd.x*nd.x + nd.y*nd.y);
+        if (dist < 1) return;
+        const ux = nd.x / dist, uy = nd.y / dist;
+        nd.fx += ux * SIM.K_RADIAL * dist;
+        nd.fy += uy * SIM.K_RADIAL * dist;
     });
 
-    // Integrate + damp
-    // Apenas o nó 'main' (centro atual) é fixado.
-    // Todos os outros nós (incluindo teias históricas) ficam livres para que a física desembole a rede inteira organicamente!
-    n.forEach(nd => {
-        if (nd.type === 'main') return;
-        
+    // Integrate espinha
+    spineNodes.forEach(nd => {
+        if (nd.type === 'main') return; // âncora atual = fixo
         nd.vx = (nd.vx + nd.fx) * SIM.DAMP;
         nd.vy = (nd.vy + nd.fy) * SIM.DAMP;
-
-        // Limita a velocidade máxima para evitar que as bolhas "explodam" para fora da tela
-        const currentSpeed = Math.sqrt(nd.vx*nd.vx + nd.vy*nd.vy);
-        if (currentSpeed > 40) {
-            nd.vx = (nd.vx / currentSpeed) * 40;
-            nd.vy = (nd.vy / currentSpeed) * 40;
-        }
-
-        nd.x += nd.vx; nd.y += nd.vy;
-        
+        // Cap de velocidade
         const speed = Math.sqrt(nd.vx*nd.vx + nd.vy*nd.vy);
+        if (speed > 60) { nd.vx = nd.vx/speed*60; nd.vy = nd.vy/speed*60; }
+        nd.x += nd.vx; nd.y += nd.vy;
         if (speed > maxV) maxV = speed;
         if (nd.el) { nd.el.style.left = `${nd.x}px`; nd.el.style.top = `${nd.y}px`; }
     });
 
+    // Reposiciona filhos em órbita ao redor do pai atualizado
+    _repositionOrbitNodes();
     refreshSvgEdges();
 
-    // Continue until kinetic energy dies
     if (maxV > SIM.MIN_V) {
         S.simHandle = requestAnimationFrame(runSimStep);
     } else {
         S.simRunning = false;
     }
+}
+
+/**
+ * Reposiciona todos os filhos (nós não-espinha) em órbita fixa ao redor do pai.
+ * Isso implementa o "Orbit Lock" — o shape da estrela é SEMPRE perfeito,
+ * independente de qualquer outra força na simulação.
+ */
+function _repositionOrbitNodes() {
+    S.nodes.forEach(nd => {
+        // Filhos da espinha têm parentId e fanAngle definidos no spawn
+        if (nd.fanAngle === undefined || nd.isPath) return;
+        const parent = S.nodes.find(n => n.id === nd.parentId);
+        if (!parent) return;
+        nd.x = parent.x + SIM.ORBIT_R * Math.cos(nd.fanAngle);
+        nd.y = parent.y + SIM.ORBIT_R * Math.sin(nd.fanAngle);
+        if (nd.el) { nd.el.style.left = `${nd.x}px`; nd.el.style.top = `${nd.y}px`; }
+    });
 }
 
 function startSim() {
@@ -508,25 +520,38 @@ function spawnSuggestions(parent) {
     });
     if (!suggs.length) return;
 
-    // Place children in a perfect circle at their resting distance
-    const R = SIM.REST;
+    // ── ARC SPAWNING: Calcula o arco de expansão para esta geração ──
+    // fanDir é a direção de avanço (ângulo do avô para este pai).
+    // Para o nó root (gen 0), fanDir é null → usa 360°.
+    const isRoot = parent.fanDir === undefined;
+    const fanDir  = isRoot ? 0 : parent.fanDir;  // ângulo central do leque
+    const fanHalf = isRoot
+        ? Math.PI          // 360° = 2*PI → halfSpan = PI
+        : (SIM.FAN_ARC / 2) * (Math.PI / 180); // ex: 200° → halfSpan = 100°
+
+    // Distribui sugestões uniformemente dentro do arco [fanDir-halfSpan, fanDir+halfSpan]
+    const total = suggs.length;
     suggs.forEach((sug, i) => {
-        const angle = (i / suggs.length) * Math.PI * 2;
+        // t varia de 0 a 1 ao longo do arco
+        const t = total === 1 ? 0.5 : i / (total - 1);
+        const angle = (fanDir - fanHalf) + t * (2 * fanHalf);
+
         const nd = {
             id: S.nextId++,
-            x: parent.x + R * Math.cos(angle),
-            y: parent.y + R * Math.sin(angle),
+            x: parent.x + SIM.ORBIT_R * Math.cos(angle),
+            y: parent.y + SIM.ORBIT_R * Math.sin(angle),
             vx: 0, vy: 0,
             chord: sug.chord, type: sug.route, route: sug.route,
             label: sug.label, vlScore: sug.vlScore, vlClass: sug.vlClass, common: sug.common,
             parentId: parent.id,
+            fanAngle: angle,   // ângulo orbital fixo em relação ao pai
         };
         S.nodes.push(nd); createNode(nd);
         S.edges.push({ fromId: parent.id, toId: nd.id, vlClass: sug.vlClass, route: sug.route });
     });
 
     refreshSvgEdges();
-    startSim(); // physics resolves overlaps
+    startSim();
 }
 
 function expandToMain(nd) {
@@ -534,6 +559,13 @@ function expandToMain(nd) {
     
     const prevMain = S.nodes.find(n => n.type === 'main');
     if (prevMain) S.history.push(prevMain);
+
+    // Calcula o ângulo de AVANÇO: direção do centro antigo para o novo.
+    // Este ângulo se torna o fanDir do novo centro, garantindo que
+    // os próximos filhos nasçam NO MESMO SENTIDO — nunca para trás.
+    if (prevMain) {
+        nd.fanDir = Math.atan2(nd.y - prevMain.y, nd.x - prevMain.x);
+    }
 
     // Marca o nó clicado como parte do caminho ANTES do loop de demote,
     // para que a física o fixe imediatamente e não seja erroneamente removido depois
@@ -558,12 +590,9 @@ function expandToMain(nd) {
         }
     });
 
-    // Marca a aresta que conecta ao novo centro como "caminho histórico"
+    // Marca a aresta do caminho histórico
     S.edges.forEach(e => { 
-        if (e.toId === nd.id) {
-            e.isHistory = true;
-            e.rest = 650; // Afasta as rodas inteiras para não sobreporem
-        }
+        if (e.toId === nd.id) e.isHistory = true;
     });
 
     // Pan da câmera para centralizar o nó escolhido
