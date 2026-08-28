@@ -123,7 +123,7 @@ body.ce-page {
 }
 .ce-select:focus { border-color: var(--ce-purple); box-shadow: 0 0 0 2px rgba(167,139,250,.25); }
 .ce-select option { background: #1a1a2e; color: #e0e0ff; }
-
+.ce-select optgroup { background: #121220; color: #a78bfa; font-weight: bold; font-style: normal; }
 /* Random chord button row */
 .ce-random-row {
     display: flex; gap: 6px; align-items: flex-end;
