@@ -183,10 +183,19 @@ function runSimStep() {
             const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
             let f = SIM.K_REP / (dist * dist);
             
-            // Hard Collision / Espaçamento Mínimo:
-            // Impede que as bolhas "embolem" aplicando uma força brutal se chegarem a menos de 110px
+            // Hard Collision / Espaçamento Mínimo para bolhas normais:
             if (dist < 110) {
                 f += (110 - dist) * 0.8; 
+            }
+
+            // Repulsão brutal entre os "Centros" das estrelas (main e history-active)
+            // Isso garante que se o usuário "voltar" (ex: esquerda, depois direita), 
+            // os centros vão deslizar para formar um triângulo (cima/baixo) em vez de sobrepor a linha.
+            const isCenterI = n[i].type === 'main' || n[i].isPath;
+            const isCenterJ = n[j].type === 'main' || n[j].isPath;
+            if (isCenterI && isCenterJ && dist < 700) {
+                if (dist < 10) { dx += (Math.random() - 0.5) * 50; dy += (Math.random() - 0.5) * 50; } // kick forte para o lado
+                f += (700 - dist) * 1.5; 
             }
             
             const ux = dx / dist, uy = dy / dist;
