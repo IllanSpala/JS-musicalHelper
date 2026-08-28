@@ -308,8 +308,8 @@ function drawCagedSvg(shape) {
         }
     }
 
-    // Dots
-    const tuning = { 1: 4, 2: 11, 3: 7, 4: 2, 5: 9, 6: 4 };
+    // Dots — tuning: str1=E2(4), str2=A2(9), str3=D3(2), str4=G3(7), str5=B3(11), str6=E4(4)
+    const tuning = { 1:4, 2:9, 3:2, 4:7, 5:11, 6:4 };
     shape.dots.forEach(([str, absFret]) => {
         const sx = xs(STRINGS - str);
         const noteName = MT.pcToName((tuning[str] + absFret) % 12);
@@ -353,7 +353,7 @@ function showTooltip(nd) {
     $ttNotes.innerHTML   = nd.chord.notes.map(n => `<span class="ce-tooltip-note-badge">${n}</span>`).join('');
 
     const rl = { resolution:'🟢 Resolução', tension:'🟠 Tensão/Empréstimo', voice:'🔵 Retenção de Voz' };
-    $ttRoute.textContent  = rl[nd.route] || '';
+    $ttRoute.textContent  = nd.tooltipFn || rl[nd.route] || '';
     $ttRoute.style.color  = ROUTE_COLOR[nd.route] || '#fff';
     $ttVl.innerHTML       = nd.vlScore !== undefined
         ? `VL Score: <strong>${nd.vlScore}</strong> · Notas comuns: <strong>${nd.common ?? 0}</strong>`
@@ -427,6 +427,7 @@ function createNode(nd) {
     el.setAttribute('tabindex','0');
     el.setAttribute('role','button');
     el.setAttribute('aria-label', `Acorde ${nd.chord.name}`);
+    if (nd.tooltipFn) el.setAttribute('title', nd.tooltipFn);
     el.style.left = `${nd.x}px`; el.style.top = `${nd.y}px`;
     el.innerHTML = `<span class="ce-node-chord">${nd.chord.name}</span>${nd.label ? `<span class="ce-node-route-badge">${nd.label}</span>` : ''}`;
     el.addEventListener('animationend', () => el.classList.remove('ce-node-entering'), { once:true });
@@ -503,19 +504,38 @@ function expandToMain(nd) {
     const prevMain = S.nodes.find(n => n.type === 'main');
     if (prevMain) S.history.push(prevMain);
 
-    // Demote nodes instead of deleting them to create a growing procedural web
+    // Prune siblings: remove irmãos (mesma geração, mesmo parentId, não selecionados)
+    const siblingsToRemove = S.nodes.filter(n =>
+        n.id !== nd.id &&
+        n.parentId === nd.parentId &&
+        !n.isPath &&
+        n.type !== 'main' &&
+        n.type !== 'history'
+    );
+
+    siblingsToRemove.forEach(n => {
+        if (n.el) {
+            n.el.classList.add('ce-node-fade-out');
+            n.el.addEventListener('animationend', () => n.el?.remove(), { once: true });
+        }
+    });
+
+    // Remove os edges dos siblings
+    const siblingIds = new Set(siblingsToRemove.map(n => n.id));
+    S.edges = S.edges.filter(e => !siblingIds.has(e.toId));
+    S.nodes = S.nodes.filter(n => !siblingIds.has(n.id));
+
+    // Demote restantes: main → history-active, outros nós não-path → history
     S.nodes.forEach(n => {
         if (n.id === nd.id) return;
-        
         if (n.type === 'main') {
             n.type = 'history';
-            n.isPath = true; // Mark as part of the selected historical path
+            n.isPath = true;
             if (n.el) {
                 n.el.classList.remove('ce-node--main');
                 n.el.classList.add('ce-node--history-active');
             }
         } else if (!n.isPath) {
-            // Only demote to inactive history if it's an unexplored branch
             n.type = 'history';
             if (n.el) {
                 n.el.classList.remove('ce-node--resolution', 'ce-node--tension', 'ce-node--voice');
@@ -524,24 +544,21 @@ function expandToMain(nd) {
         }
     });
 
-    // Highlight the edge connecting to the new center
-    S.edges.forEach(e => {
-        if (e.toId === nd.id) e.isHistory = true;
-    });
+    // Marca a aresta que conecta ao novo centro como "caminho histórico"
+    S.edges.forEach(e => { if (e.toId === nd.id) e.isHistory = true; });
 
-    // Instead of teleporting the node to the center (which breaks physics),
-    // we PAN the camera to center the newly selected node.
+    // Pan da câmera para centralizar o nó escolhido
     const c = canvasCenter();
     S.pan.x = c.x - (nd.x * S.zoom);
     S.pan.y = c.y - (nd.y * S.zoom);
     applyTransform();
 
-    nd.type = 'main'; 
-    nd.route = null; 
+    nd.type = 'main';
+    nd.route = null;
     nd.label = null;
     S.mainChord = nd.chord;
 
-    // Rebuild main node element so it gets the glowing 'main' styling
+    // Reconstrói o elemento do nó com o estilo 'main'
     const oldEl = document.getElementById(`ce-node-${nd.id}`);
     if (oldEl) oldEl.remove(); nd.el = null;
     createNode(nd);

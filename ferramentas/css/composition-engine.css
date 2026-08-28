@@ -331,6 +331,11 @@ body.ce-page {
     to   { transform: translate(-50%,-50%) scale(1); opacity:1; }
 }
 .ce-node-entering { animation: ceNodePop .4s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes ceNodeFadeOut {
+    from { transform: translate(-50%,-50%) scale(1); opacity:1; }
+    to   { transform: translate(-50%,-50%) scale(0.4); opacity:0; }
+}
+.ce-node-fade-out { animation: ceNodeFadeOut .35s ease-in forwards; pointer-events:none; }
 
 .ce-node--main {
     width: 100px; height: 100px;

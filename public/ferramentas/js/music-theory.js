@@ -359,85 +359,71 @@ const MT = (() => {
     function expandChord(sourceChord, quality = 'maj7', options = {}) {
         const { showResolution = true, showTension = true, showVoice = true } = options;
         const suggestions = [];
-        const seen = new Set(); // evita duplicatas de nome de acorde
+        const seen = new Set();
 
-        const addSuggestion = (chordObj, route, label) => {
+        const addSuggestion = (chordObj, route, label, tooltipFn = '') => {
             if (!chordObj || seen.has(chordObj.name)) return;
             seen.add(chordObj.name);
             const vlScore = voiceLeadingScore(sourceChord.pcs, chordObj.pcs);
             const vlClass = classifyVoiceLeading(vlScore);
             const common  = commonNoteCount(sourceChord.pcs, chordObj.pcs);
-            suggestions.push({ chord: chordObj, route, vlScore, vlClass, common, label });
+            suggestions.push({ chord: chordObj, route, vlScore, vlClass, common, label, tooltipFn });
         };
 
         const rPC = sourceChord.rootPC;
 
-        /* ── Rota de Resolução (verde) ──────────────────────────────── */
+        /* ── Rota de Resolução (verde) — movimento "cadencial" ── */
         if (showResolution) {
-            // 4ª ascendente — subdominante do próximo (movimento "natural")
-            const fourthUp = mod12(rPC + 5);
-            addSuggestion(buildChord(pcToName(fourthUp), quality),  'resolution', '4ª↑');
-
-            // V-I: raiz a uma 5ª acima → dominante que resolve nela
-            const fifth = mod12(rPC + 7);
-            addSuggestion(buildChord(pcToName(fifth), '7'), 'resolution', 'V7→');
-
-            // Cadência para a relativa (se a qualidade atual é maior, vai para a menor)
-            const relative = mod12(rPC + 9); // relativa menor (+9 semitons)
-            addSuggestion(buildChord(pcToName(relative), 'm7'), 'resolution', 'VIm');
+            // 4ª justa ascendente → Subdominante (IV)
+            addSuggestion(buildChord(pcToName(mod12(rPC + 5)), quality), 'resolution', 'IV', 'Subdominante natural');
+            // V7 → dominante clássico que resolve na tônica
+            addSuggestion(buildChord(pcToName(mod12(rPC + 7)), '7'), 'resolution', 'V7', 'Dominante — máxima tensão resolutiva');
+            // VIm → relativa menor (repouso alternativo)
+            addSuggestion(buildChord(pcToName(mod12(rPC + 9)), 'm7'), 'resolution', 'VIm7', 'Relativa menor — repouso alternativo');
+            // IIm7 → pré-dominante (II-V-I)
+            addSuggestion(buildChord(pcToName(mod12(rPC + 2)), 'm7'), 'resolution', 'IIm7', 'Pré-dominante — prepara o V7');
         }
 
-        /* ── Rota de Tensão / Empréstimo Modal (laranja) ──────────── */
+        /* ── Rota de Tensão / Empréstimo Modal (laranja) ── */
         if (showTension) {
-            // bVII (modo misto): acorde a um semitom abaixo da tônica
-            const bVII = mod12(rPC - 2);
-            addSuggestion(buildChord(pcToName(bVII), quality), 'tension', 'bVII');
-
-            // bVI (modo paralelo menor/frigio): acorde a 4 semitons abaixo
-            const bVI = mod12(rPC - 4);
-            addSuggestion(buildChord(pcToName(bVI), quality), 'tension', 'bVI');
-
-            // Trítono substituto: raiz a 6 semitons (b5 da raiz original)
-            // Funciona porque compartilha a 3ª e 7ª com o dominante original.
-            const tritone = mod12(rPC + 6);
-            addSuggestion(buildChord(pcToName(tritone), '7'), 'tension', 'SubV');
-
-            // Napolitano (bII): um semitom acima — mais dramático
-            const neapolitan = mod12(rPC + 1);
-            addSuggestion(buildChord(pcToName(neapolitan), 'maj'), 'tension', 'bII');
+            // bVIImaj7 — modo Mixolídio/Dórico (empréstimo mais comum no rock)
+            addSuggestion(buildChord(pcToName(mod12(rPC - 2)), quality), 'tension', 'bVII', 'Empréstimo do modo Mixolídio/Eólio');
+            // bVImaj7 — modo Eólio / paralelo menor
+            addSuggestion(buildChord(pcToName(mod12(rPC - 4)), quality), 'tension', 'bVI', 'Empréstimo do modo Eólio paralelo');
+            // SubV7 — substituto de trítono do V7
+            addSuggestion(buildChord(pcToName(mod12(rPC + 6)), '7'), 'tension', 'SubV', 'Substituto de trítono — compartilha 3ª e 7ª com V7');
+            // bIImaj — Napolitano (bII) — movimento cromático descendente
+            addSuggestion(buildChord(pcToName(mod12(rPC + 1)), 'maj'), 'tension', 'bII', 'Acorde Napolitano — movimento frigio');
+            // ivm7 — IV menor paralelo (tão frequente no pop/soul)
+            addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'tension', 'ivm7', 'IV menor — empréstimo modal expressivo');
+            // V7/V — dominante secundário (dominante do dominante)
+            addSuggestion(buildChord(pcToName(mod12(rPC + 2)), '7'), 'tension', 'V7/V', 'Dominante secundário — aponta para V');
         }
 
-        /* ── Rota de Retenção de Voz (azul) ────────────────────────── */
+        /* ── Rota de Retenção de Voz (azul) ── */
         if (showVoice) {
-            // Varre todos os 12 PCs e calcula VL com o acorde fonte.
-            // Seleciona os candidatos com VLScore ≤ 4 e ≥ 2 notas comuns.
-            // Analogia: imagine o acorde atual como um polígono num espaço
-            // cromático circular. Os candidatos "vizinhos" são polígonos que
-            // compartilham ao menos uma aresta (nota comum) com o atual.
-            const qualityCandidates = [quality, 'm7', 'dim7', 'm7b5', '7'];
+            const qualityCandidates = [quality, 'm7', 'dim7', 'm7b5', '7', 'maj7'];
             for (let targetPC = 0; targetPC < 12; targetPC++) {
-                if (targetPC === rPC) continue; // evita o próprio acorde
+                if (targetPC === rPC) continue;
                 for (const q of qualityCandidates) {
                     const candidate = buildChord(pcToName(targetPC), q);
                     if (!candidate || seen.has(candidate.name)) continue;
                     const vl = voiceLeadingScore(sourceChord.pcs, candidate.pcs);
                     const common = commonNoteCount(sourceChord.pcs, candidate.pcs);
                     if (vl <= 4 && common >= 2) {
-                        addSuggestion(candidate, 'voice', `${common}NC`);
-                        break; // pega apenas a melhor qualidade por raiz
+                        addSuggestion(candidate, 'voice', `${common}NC`, `${common} notas comuns — voice leading suave`);
+                        break;
                     }
                 }
             }
         }
 
-        // Limita para não sobrecarregar o layout radial: máx. 3 por rota
-        const filtered = [
-            ...suggestions.filter(s => s.route === 'resolution').slice(0, 3),
-            ...suggestions.filter(s => s.route === 'tension').slice(0, 3),
-            ...suggestions.filter(s => s.route === 'voice').slice(0, 3),
+        // Max 4 por rota para não sobrecarregar o layout
+        return [
+            ...suggestions.filter(s => s.route === 'resolution').slice(0, 4),
+            ...suggestions.filter(s => s.route === 'tension').slice(0, 4),
+            ...suggestions.filter(s => s.route === 'voice').slice(0, 4),
         ];
-
-        return filtered;
     }
 
 
@@ -476,36 +462,48 @@ const MT = (() => {
      * Frets são RELATIVOS à raiz: 0 = fret onde está a raiz naquela corda.
      * O JS calcula o fret absoluto somando rootFret (posição da raiz na 6ª corda).
      */
+    // CAGED_MAJOR: notação (string, fret_relativo_ao_shape_base)
+    // Em - Mi grave=1, La=2, Re=3, Sol=4, Si=5, Mi agudo=6
+    // Frets relativos ao template aberto de C (baseShape para C):
+    //   La(2):3=C, Re(3):2=E, Sol(4):0=G, Si(5):1=C, MiAg(6):0=E → C-E-G-C-E ✓
     const CAGED_MAJOR = [
-        // C-shape: raiz na 5ª corda
-        { cagedLetter:'C', rootString:5, rootFretOffset:3,
-          dots:[[5,3],[4,2],[3,0],[2,1],[1,0]], barre:null, muted:[6] },
-        // A-shape: raiz na 5ª corda, barre
-        { cagedLetter:'A', rootString:5, rootFretOffset:0,
-          dots:[[5,0],[4,2],[3,2],[2,2],[1,0]], barre:null, muted:[6] },
-        // G-shape: raiz na 6ª e 1ª corda
-        { cagedLetter:'G', rootString:6, rootFretOffset:0,
-          dots:[[6,0],[5,2],[4,2],[3,0],[2,3],[1,0]], barre:null, muted:[] },
-        // E-shape: raiz na 6ª corda, barre
-        { cagedLetter:'E', rootString:6, rootFretOffset:0,
-          dots:[[6,0],[5,2],[4,2],[3,1],[2,0],[1,0]], barre:null, muted:[] },
-        // D-shape: raiz na 4ª corda
-        { cagedLetter:'D', rootString:4, rootFretOffset:0,
-          dots:[[4,0],[3,2],[2,3],[1,2]], barre:null, muted:[6,5] },
+        // C-shape aberto em C: x-3-2-0-1-0
+        { cagedLetter:'C', rootString:2, rootFretOffset:3,
+          dots:[[2,3],[3,2],[4,0],[5,1],[6,0]], barre:null, muted:[1] },
+        // A-shape: barre + 3ª no G e Si → notas: R-5-R-3-5
+        // Am aberto: x-0-2-2-2-0 (Em C: x-3-5-5-5-3 via barre)
+        { cagedLetter:'A', rootString:2, rootFretOffset:0,
+          dots:[[2,0],[3,2],[4,2],[5,2],[6,0]], barre:null, muted:[1] },
+        // G-shape: raiz em MiGrave(1) e MiAgudo(6)
+        // G aberto: 3-2-0-0-0-3 → R-3-5-R-3-R
+        { cagedLetter:'G', rootString:1, rootFretOffset:3,
+          dots:[[1,3],[2,2],[3,0],[4,0],[5,0],[6,3]], barre:null, muted:[] },
+        // E-shape: barre clássico. E aberto: 0-2-2-1-0-0 → R-5-R-3-5-R
+        { cagedLetter:'E', rootString:1, rootFretOffset:0,
+          dots:[[1,0],[2,2],[3,2],[4,1],[5,0],[6,0]], barre:null, muted:[] },
+        // D-shape: raiz em Re(3). D aberto: x-x-0-2-3-2 → R-5-R-3
+        { cagedLetter:'D', rootString:3, rootFretOffset:0,
+          dots:[[3,0],[4,2],[5,3],[6,2]], barre:null, muted:[1,2] },
     ];
 
-    /** Shapes base para acorde MENOR (m7 — 5 posições) */
+    // CAGED_MINOR7: baseados nas posições abertas de Am e Em
+    // Am aberto: x-0-2-2-1-0 → R-5-b3-R-5 (notas: R,5ª,b3ª ✓)
     const CAGED_MINOR7 = [
-        { cagedLetter:'C', rootString:5, rootFretOffset:3,
-          dots:[[5,3],[4,2],[3,0],[2,1],[1,0]], barre:{ fret:0, strFrom:1, strTo:5 }, muted:[6] },
-        { cagedLetter:'A', rootString:5, rootFretOffset:0,
-          dots:[[5,0],[4,2],[3,2],[2,1],[1,0]], barre:{ fret:0, strFrom:1, strTo:5 }, muted:[6] },
-        { cagedLetter:'G', rootString:6, rootFretOffset:0,
-          dots:[[6,0],[5,2],[4,2],[3,0],[2,0],[1,0]], barre:{ fret:0, strFrom:1, strTo:6 }, muted:[] },
-        { cagedLetter:'E', rootString:6, rootFretOffset:0,
-          dots:[[6,0],[5,2],[4,2],[3,0],[2,0],[1,0]], barre:null, muted:[] },
-        { cagedLetter:'D', rootString:4, rootFretOffset:0,
-          dots:[[4,0],[3,2],[2,3],[1,1]], barre:null, muted:[6,5] },
+        // Am-shape: raiz na corda La (2)
+        { cagedLetter:'A', rootString:2, rootFretOffset:0,
+          dots:[[2,0],[3,2],[4,2],[5,1],[6,0]], barre:null, muted:[1] },
+        // Em-shape: raiz na MiGrave (1). Em aberto: 0-2-2-0-0-0 → R-5-b3-R-5
+        { cagedLetter:'E', rootString:1, rootFretOffset:0,
+          dots:[[1,0],[2,2],[3,2],[4,0],[5,0],[6,0]], barre:null, muted:[] },
+        // Dm-shape: raiz no Re (3). Dm aberto: x-x-0-2-3-1 → R-5-b3-R
+        { cagedLetter:'D', rootString:3, rootFretOffset:0,
+          dots:[[3,0],[4,2],[5,3],[6,1]], barre:null, muted:[1,2] },
+        // Cm-shape: barre na La (2) — baseado no Am transposto
+        { cagedLetter:'C', rootString:2, rootFretOffset:3,
+          dots:[[2,3],[3,5],[4,5],[5,4],[6,3]], barre:{ fret:3, strFrom:2, strTo:6 }, muted:[1] },
+        // Gm-shape: barre na MiGrave (1)
+        { cagedLetter:'G', rootString:1, rootFretOffset:3,
+          dots:[[1,3],[2,5],[3,5],[4,3],[5,3],[6,3]], barre:{ fret:3, strFrom:1, strTo:6 }, muted:[] },
     ];
 
     /**
@@ -526,32 +524,36 @@ const MT = (() => {
         const rootPC = nameToPC(rootName);
         if (rootPC === null) return [];
 
-        // Escolhe o template por família de qualidade
         const isMinor = ['min','m7','m7b5','mM7','m9','m6','madd9','dim','dim7'].includes(quality);
         const baseShapes = isMinor ? CAGED_MINOR7 : CAGED_MAJOR;
 
-        // PC das cordas soltas: E2=4, A2=9, D3=2, G3=7, B3=11, E4=4
-        const openPC = [null, 4, 9, 2, 7, 11, 4]; // index = string number (1-based: string 1 = Mi grave)
+        // Afinação padrão: string 1=E2(4), 2=A2(9), 3=D3(2), 4=G3(7), 5=B3(11), 6=E4(4)
+        const openPC = { 1:4, 2:9, 3:2, 4:7, 5:11, 6:4 };
 
         return baseShapes.map(shape => {
-            // Fret absoluto da raiz naquela corda
-            const openP = openPC[shape.rootString];
-            const baseFret = mod12(rootPC - openP) || 12;
+            const openP  = openPC[shape.rootString];
+            // Fret onde a raiz aparece nessa corda (mínimo 1 para evitar corda solta como raiz)
+            let baseFret = mod12(rootPC - openP);
+            if (baseFret === 0) baseFret = 12;
 
-            // Translada todos os dots pelo baseFret (mantendo fret=0 como corda solta)
+            // Translada: fret absoluto = baseFret + (relFret - rootFretOffset)
             const translatedDots = shape.dots.map(([str, relFret]) => {
-                const absFret = relFret === 0 ? 0 : baseFret + (relFret - shape.rootFretOffset);
-                return [str, Math.max(0, absFret)];
+                if (relFret === 0) return [str, 0]; // corda solta — não translada
+                const absFret = baseFret + (relFret - shape.rootFretOffset);
+                return [str, Math.max(1, absFret)];
             });
 
-            const minFret = Math.min(...translatedDots.filter(d => d[1] > 0).map(d => d[1]));
-            const capoFret = minFret > 0 ? minFret : 1;
+            // capoFret = menor fret pressionado (para mostrar posição no braço)
+            const pressedFrets = translatedDots.filter(d => d[1] > 0).map(d => d[1]);
+            const capoFret = pressedFrets.length ? Math.min(...pressedFrets) : 1;
 
             return {
                 cagedLetter: shape.cagedLetter,
                 capoFret,
                 dots: translatedDots,
-                barre: shape.barre ? { fret: capoFret, strFrom: shape.barre.strFrom, strTo: shape.barre.strTo } : null,
+                barre: shape.barre
+                    ? { fret: capoFret, strFrom: shape.barre.strFrom, strTo: shape.barre.strTo }
+                    : null,
                 muted: shape.muted,
                 fretWindow: [capoFret, capoFret + 4],
             };
