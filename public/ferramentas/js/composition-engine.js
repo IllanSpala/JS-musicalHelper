@@ -176,10 +176,20 @@ function runSimStep() {
     // Repulsion between all pairs — O(n²), acceptable for n≤30
     for (let i = 0; i < n.length; i++) {
         for (let j = i + 1; j < n.length; j++) {
-            const dx = n[j].x - n[i].x, dy = n[j].y - n[i].y;
+            let dx = n[j].x - n[i].x, dy = n[j].y - n[i].y;
+            // Previne divisão por zero caso nasçam na mesma coordenada exata
+            if (dx === 0 && dy === 0) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; }
+            
             const dist = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
-            const f    = SIM.K_REP / (dist * dist);
-            const ux   = dx / dist, uy = dy / dist;
+            let f = SIM.K_REP / (dist * dist);
+            
+            // Hard Collision / Espaçamento Mínimo:
+            // Impede que as bolhas "embolem" aplicando uma força brutal se chegarem a menos de 110px
+            if (dist < 110) {
+                f += (110 - dist) * 0.8; 
+            }
+            
+            const ux = dx / dist, uy = dy / dist;
             n[i].fx -= ux * f; n[i].fy -= uy * f;
             n[j].fx += ux * f; n[j].fy += uy * f;
         }
