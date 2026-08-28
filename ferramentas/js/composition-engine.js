@@ -177,11 +177,9 @@ document.getElementById('ce-zoom-reset').onclick = () => { S.zoom = 1; S.pan = {
 ──────────────────────────────────────────────────────────────────────────── */
 const SIM = {
     ORBIT_R: 220,      // raio do leque de filhos em torno do pai
-    FAN_ARC: 200,      // graus do arco de spawn para gerações futuras
-    SPINE_REST: 650,   // distância mínima desejada entre centros de estrela
-    K_SPINE: 2.0,      // força da mola da espinha
-    K_RADIAL: 0.25,    // força de expansão radial (empurra para longe da origem)
-    DAMP: 0.75,        // amortecimento da espinha
+    SPINE_REST: 500,   // distância mínima entre centros de estrela (> 2*ORBIT_R = 440px)
+    K_SPINE: 1.5,      // força de repulsão entre centros da espinha
+    DAMP: 0.72,        // amortecimento da espinha
     MIN_V: 0.5,        // limiar de energia cinética para parar simulação
 };
 
@@ -213,14 +211,8 @@ function runSimStep() {
         }
     }
 
-    // Força 2: Expansão Radial — cada nó da espinha é empurrado para longe da raiz
-    spineNodes.forEach(nd => {
-        const dist = Math.sqrt(nd.x*nd.x + nd.y*nd.y);
-        if (dist < 1) return;
-        const ux = nd.x / dist, uy = nd.y / dist;
-        nd.fx += ux * SIM.K_RADIAL * dist;
-        nd.fy += uy * SIM.K_RADIAL * dist;
-    });
+    // Força 2: Expansão leve no eixo de avanço da espinha dorsal
+    // (nenhuma força radial — era ela que expulsava os nós da tela)
 
     // Integrate espinha
     spineNodes.forEach(nd => {
@@ -520,21 +512,14 @@ function spawnSuggestions(parent) {
     });
     if (!suggs.length) return;
 
-    // ── ARC SPAWNING: Calcula o arco de expansão para esta geração ──
-    // fanDir é a direção de avanço (ângulo do avô para este pai).
-    // Para o nó root (gen 0), fanDir é null → usa 360°.
-    const isRoot = parent.fanDir === undefined;
-    const fanDir  = isRoot ? 0 : parent.fanDir;  // ângulo central do leque
-    const fanHalf = isRoot
-        ? Math.PI          // 360° = 2*PI → halfSpan = PI
-        : (SIM.FAN_ARC / 2) * (Math.PI / 180); // ex: 200° → halfSpan = 100°
-
-    // Distribui sugestões uniformemente dentro do arco [fanDir-halfSpan, fanDir+halfSpan]
+    // ── ARC SPAWNING ──
+    // TODAS as estrelas usam 360° completos — o círculo sempre fica perfeito.
+    // O que muda de geração para geração é ONDE o centro da estrela nasce
+    // (determinado pela escolha do usuário na geração anterior), não onde
+    // os filhos nascem em relação ao centro.
     const total = suggs.length;
     suggs.forEach((sug, i) => {
-        // t varia de 0 a 1 ao longo do arco
-        const t = total === 1 ? 0.5 : i / (total - 1);
-        const angle = (fanDir - fanHalf) + t * (2 * fanHalf);
+        const angle = (i / total) * Math.PI * 2;
 
         const nd = {
             id: S.nextId++,
@@ -544,7 +529,7 @@ function spawnSuggestions(parent) {
             chord: sug.chord, type: sug.route, route: sug.route,
             label: sug.label, vlScore: sug.vlScore, vlClass: sug.vlClass, common: sug.common,
             parentId: parent.id,
-            fanAngle: angle,   // ângulo orbital fixo em relação ao pai
+            fanAngle: angle,   // ângulo orbital fixo — Orbit Lock
         };
         S.nodes.push(nd); createNode(nd);
         S.edges.push({ fromId: parent.id, toId: nd.id, vlClass: sug.vlClass, route: sug.route });
