@@ -9,7 +9,7 @@ const TOOLS = [
     desc: 'Subdivida o tempo com precisão cirúrgica. Sincronize seu timing.',
     icon: '⟁',
     href: './ferramentas/PolyMetro.html',
-    tag: 'SYS.03',
+    tag: 'SYS.01',
     color: '#00C9A7',
   },
   {
@@ -19,7 +19,7 @@ const TOOLS = [
     desc: 'Visualize padrões, posições e shapes CAGED em tempo real no braço.',
     icon: '♯',
     href: './ferramentas/ScaleMachine.html',
-    tag: 'SYS.01',
+    tag: 'SYS.02',
     color: '#E63B2E',
   },
   {
@@ -29,7 +29,7 @@ const TOOLS = [
     desc: 'Carregue, visualize e pratique tablaturas em um ambiente fluido e imersivo.',
     icon: '≡',
     href: './ferramentas/TabPlayer.html',
-    tag: 'SYS.04',
+    tag: 'SYS.03',
     color: '#F59E0B',
   },
   {
@@ -39,7 +39,7 @@ const TOOLS = [
     desc: 'Teia harmônica dos acordes. Construa progressões e descubra os graus tonais.',
     icon: '◎',
     href: './ferramentas/HarmonicMap.html',
-    tag: 'SYS.02',
+    tag: 'SYS.04',
     color: '#7B61FF',
   },
   {
