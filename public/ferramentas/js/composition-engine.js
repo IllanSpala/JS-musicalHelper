@@ -209,10 +209,10 @@ function runSimStep() {
     });
 
     // Integrate + damp
-    // 'main', nós do caminho histórico (isPath) e todos os nós antigos ('history') são fixados
-    // Isso cria "múltiplas teias procedurais" preservando a posição das gerações anteriores
+    // Apenas o nó 'main' (centro atual) é fixado.
+    // Todos os outros nós (incluindo teias históricas) ficam livres para que a física desembole a rede inteira organicamente!
     n.forEach(nd => {
-        if (nd.type === 'main' || nd.type === 'history' || nd.isPath) return;
+        if (nd.type === 'main') return;
         
         nd.vx = (nd.vx + nd.fx) * SIM.DAMP;
         nd.vy = (nd.vy + nd.fy) * SIM.DAMP;
