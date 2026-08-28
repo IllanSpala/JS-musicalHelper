@@ -530,7 +530,7 @@ const MT = (() => {
         // Afinação padrão: string 1=E2(4), 2=A2(9), 3=D3(2), 4=G3(7), 5=B3(11), 6=E4(4)
         const openPC = { 1:4, 2:9, 3:2, 4:7, 5:11, 6:4 };
 
-        return baseShapes.map(shape => {
+        const shapes = baseShapes.map(shape => {
             const openP  = openPC[shape.rootString];
             // Fret onde a raiz aparece nessa corda (mínimo 1 para evitar corda solta como raiz)
             let baseFret = mod12(rootPC - openP);
@@ -558,6 +558,10 @@ const MT = (() => {
                 fretWindow: [capoFret, capoFret + 4],
             };
         });
+
+        // Ordena pela posição no braço (do mais grave perto da pestana para o mais agudo)
+        // Isso garante que o "Shape Original" (mais comum/baixo) seja sempre o primeiro no carrossel.
+        return shapes.sort((a, b) => a.capoFret - b.capoFret);
     }
 
     /* ================================================================
