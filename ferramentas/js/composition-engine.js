@@ -509,6 +509,7 @@ function spawnSuggestions(parent) {
         showResolution: S.routes.resolution,
         showTension:    S.routes.tension,
         showVoice:      S.routes.voice,
+        mode:           S.mode,
     });
     if (!suggs.length) return;
 

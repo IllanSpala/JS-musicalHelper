@@ -144,6 +144,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-mode-select">
                     <i class="fas fa-layer-group"></i> Modo
+                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Define o contexto tonal das progressões. Altera os vizinhos gerados (ex: no Menor Natural, a Subdominante vira menor e a relativa muda)."></i>
                 </label>
                 <select id="ce-mode-select" class="ce-select">
                     <option value="major">Maior (Jônico)</option>
@@ -169,6 +170,7 @@
             <div class="ce-control-group">
                 <label class="ce-control-label" for="ce-quality-select">
                     <i class="fas fa-adjust"></i> Tipo de Acorde
+                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Define a densidade (Tríade, Tétrade, etc). Ao alterar, converte toda a teia visual imediatamente para a nova complexidade."></i>
                 </label>
                 <select id="ce-quality-select" class="ce-select">
                     <optgroup label="Tríades">
@@ -196,7 +198,10 @@
 
             <!-- Rotas -->
             <div class="ce-control-group">
-                <label class="ce-control-label"><i class="fas fa-project-diagram"></i> Rotas Visíveis</label>
+                <label class="ce-control-label">
+                    <i class="fas fa-project-diagram"></i> Rotas Visíveis
+                    <i class="fas fa-question-circle" style="opacity: 0.6; cursor: help; margin-left: 4px;" title="Verde (Resolução): Movimentos fortes de cadência.&#10;Laranja (Tensão): Empréstimos e dominantes temporários.&#10;Azul (Voice Leading): Transições mantendo notas em comum."></i>
+                </label>
                 <div class="ce-toggle-list" role="group">
                     <label class="ce-toggle-item">
                         <input type="checkbox" id="ce-route-resolution" checked>

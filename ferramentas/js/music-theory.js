@@ -357,7 +357,7 @@ const MT = (() => {
      * @returns {Array<{ chord, route, vlScore, vlClass, commonNotes, label }>}
      */
     function expandChord(sourceChord, quality = 'maj7', options = {}) {
-        const { showResolution = true, showTension = true, showVoice = true } = options;
+        const { showResolution = true, showTension = true, showVoice = true, mode = 'major' } = options;
         const suggestions = [];
         const seen = new Set();
 
@@ -374,30 +374,60 @@ const MT = (() => {
 
         /* ── Rota de Resolução (verde) — movimento "cadencial" ── */
         if (showResolution) {
-            // 4ª justa ascendente → Subdominante (IV)
-            addSuggestion(buildChord(pcToName(mod12(rPC + 5)), quality), 'resolution', 'IV', 'Subdominante natural');
-            // V7 → dominante clássico que resolve na tônica
-            addSuggestion(buildChord(pcToName(mod12(rPC + 7)), '7'), 'resolution', 'V7', 'Dominante — máxima tensão resolutiva');
-            // VIm → relativa menor (repouso alternativo)
-            addSuggestion(buildChord(pcToName(mod12(rPC + 9)), 'm7'), 'resolution', 'VIm7', 'Relativa menor — repouso alternativo');
-            // IIm7 → pré-dominante (II-V-I)
-            addSuggestion(buildChord(pcToName(mod12(rPC + 2)), 'm7'), 'resolution', 'IIm7', 'Pré-dominante — prepara o V7');
+            if (mode === 'minor') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'resolution', 'ivm7', 'Subdominante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 7)), '7'), 'resolution', 'V7', 'Dominante harmônico');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 3)), quality), 'resolution', 'bIII', 'Relativa maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 8)), quality), 'resolution', 'bVI', 'Subdominante paralela');
+            } else if (mode === 'dorian') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), '7'), 'resolution', 'IV7', 'Subdominante Dórica (Maior)');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 7)), 'm7'), 'resolution', 'vm7', 'Dominante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 3)), quality), 'resolution', 'bIII', 'Relativa maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 10)), quality), 'resolution', 'bVII', 'Subtônica maior');
+            } else if (mode === 'mixolydian') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), quality), 'resolution', 'IV', 'Subdominante maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 7)), 'm7'), 'resolution', 'vm7', 'Dominante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 10)), quality), 'resolution', 'bVII', 'Subtônica maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 2)), 'm7'), 'resolution', 'IIm7', 'Pré-dominante');
+            } else if (mode === 'lydian') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 7)), quality), 'resolution', 'V', 'Dominante maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 2)), '7'), 'resolution', 'II7', 'Dominante do dominante (Diatônico no Lídio)');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 4)), 'm7'), 'resolution', 'IIIm7', 'Mediante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 9)), 'm7'), 'resolution', 'VIm7', 'Relativa menor');
+            } else if (mode === 'phrygian') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 1)), quality), 'resolution', 'bII', 'Napolitano natural do Frígio');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'resolution', 'ivm7', 'Subdominante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 8)), quality), 'resolution', 'bVI', 'Submediante maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 3)), '7'), 'resolution', 'bIII7', 'Mediante (Dominante)');
+            } else if (mode === 'locrian') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 1)), quality), 'resolution', 'bII', 'Super-tônica maior');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'resolution', 'ivm7', 'Subdominante menor');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 8)), '7'), 'resolution', 'bVI7', 'Submediante dominante');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 6)), quality), 'resolution', 'bV', 'Dominante diminuta (Maior)');
+            } else {
+                // major
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), quality), 'resolution', 'IV', 'Subdominante natural');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 7)), '7'), 'resolution', 'V7', 'Dominante — máxima tensão resolutiva');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 9)), 'm7'), 'resolution', 'VIm7', 'Relativa menor — repouso alternativo');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 2)), 'm7'), 'resolution', 'IIm7', 'Pré-dominante — prepara o V7');
+            }
         }
 
         /* ── Rota de Tensão / Empréstimo Modal (laranja) ── */
         if (showTension) {
-            // bVIImaj7 — modo Mixolídio/Dórico (empréstimo mais comum no rock)
-            addSuggestion(buildChord(pcToName(mod12(rPC - 2)), quality), 'tension', 'bVII', 'Empréstimo do modo Mixolídio/Eólio');
-            // bVImaj7 — modo Eólio / paralelo menor
-            addSuggestion(buildChord(pcToName(mod12(rPC - 4)), quality), 'tension', 'bVI', 'Empréstimo do modo Eólio paralelo');
-            // SubV7 — substituto de trítono do V7
-            addSuggestion(buildChord(pcToName(mod12(rPC + 6)), '7'), 'tension', 'SubV', 'Substituto de trítono — compartilha 3ª e 7ª com V7');
-            // bIImaj — Napolitano (bII) — movimento cromático descendente
-            addSuggestion(buildChord(pcToName(mod12(rPC + 1)), 'maj'), 'tension', 'bII', 'Acorde Napolitano — movimento frigio');
-            // ivm7 — IV menor paralelo (tão frequente no pop/soul)
-            addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'tension', 'ivm7', 'IV menor — empréstimo modal expressivo');
-            // V7/V — dominante secundário (dominante do dominante)
-            addSuggestion(buildChord(pcToName(mod12(rPC + 2)), '7'), 'tension', 'V7/V', 'Dominante secundário — aponta para V');
+            if (mode === 'minor') {
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), quality), 'tension', 'IV', 'Empréstimo Dórico (Maior)');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 2)), 'm7'), 'tension', 'iim7', 'Empréstimo Dórico (menor natural)');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 1)), quality), 'tension', 'bII', 'Napolitano (Frígio)');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 6)), '7'), 'tension', 'SubV', 'Substituto de trítono');
+            } else {
+                addSuggestion(buildChord(pcToName(mod12(rPC - 2)), quality), 'tension', 'bVII', 'Empréstimo do modo Mixolídio/Eólio');
+                addSuggestion(buildChord(pcToName(mod12(rPC - 4)), quality), 'tension', 'bVI', 'Empréstimo do modo Eólio paralelo');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 6)), '7'), 'tension', 'SubV', 'Substituto de trítono — compartilha 3ª e 7ª com V7');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 1)), 'maj'), 'tension', 'bII', 'Acorde Napolitano — movimento frigio');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 5)), 'm7'), 'tension', 'ivm7', 'IV menor — empréstimo modal expressivo');
+                addSuggestion(buildChord(pcToName(mod12(rPC + 2)), '7'), 'tension', 'V7/V', 'Dominante secundário — aponta para V');
+            }
         }
 
         /* ── Rota de Retenção de Voz (azul) ── */
